@@ -26,7 +26,7 @@
 #include "GearPosition.h"
 #include "BlinkThread.h"
 #include "CAN.h"
-
+#include "ParamServer.h"
 
 #define BOARD 2
 
@@ -55,7 +55,9 @@ void BlinkLD2Task(void *argument);
 CAN_HandleTypeDef hcan1;
 CAN_HandleTypeDef hcan2;
 
-
+uint16_t VirtAddVarTab[NB_OF_VAR] = {0x5555, 0x6666, 0x7777};
+uint16_t VarDataTab[NB_OF_VAR] = {0, 0, 0};
+uint16_t VarValue,VarDataTmp = 0;
 
 /**
   * @brief  The application entry point.
@@ -65,6 +67,12 @@ int main(void)
 {
   HAL_Init();
   initDevice();
+
+  HAL_FLASH_Unlock();
+  if( EE_Init() != EE_OK)
+  {
+    Error_Handler();
+  }
 
   osKernelInitialize();
 
@@ -100,30 +108,24 @@ void StartDefaultTask(void *argument)
 {
   MX_USB_DEVICE_Init();
 
-  CAN can2(&hcan2, CAN2, CANID, 10, LD1_GPIO_Port, LD1_Pin);
-
   DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
   DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
 
-  DigitalIn inTest(GPIOB, GPIO_PIN_0, GPIO_MODE_IT_RISING_FALLING, &cb);
 
-  GearPosition gearSelect(GPIOB, GPIO_PIN_7, GPIOB, GPIO_PIN_8);
-
-
-  gearSelect.set(Gear::FORWARD);
-  uint8_t data[8] = "hello!";
+  ParamServer testEEprom(1,0);
+  //testEEprom.write(0x010);
 
   for(;;)
   {
-	can2.send(data, 8);
 
 
-	if(can2.isAvailable()) {
-		CanMsg msg = can2.read();
-		if(msg.header.StdId == 0x411) led2 = !led2;
-	}
+	  if(testEEprom.read(0)==0x010){
+		  led3 = !led3;
+	  }
+	  else{
+		  led2 = !led2;
+	  }
 
-	led3 = !led3;
 	osDelay(500);
   }
 }
