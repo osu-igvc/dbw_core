@@ -14,7 +14,7 @@
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOB
 
-#include <unordered_map>
+#include <map>
 #include <queue>
 
 
@@ -37,7 +37,7 @@ public:
 
 	DigitalOut led;
 
-	static std::unordered_map<CAN_HandleTypeDef*, CAN*> objectMap;
+	static std::map<CAN_HandleTypeDef*, CAN*> objectMap;
 
 
 private:

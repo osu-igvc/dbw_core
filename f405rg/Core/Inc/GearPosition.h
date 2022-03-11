@@ -20,7 +20,7 @@ typedef enum {
 class GearPosition {
 public:
 	GearPosition(GPIO_TypeDef* s1Port, uint16_t s1Pin, GPIO_TypeDef* s2Port, uint16_t s2Pin);
-	void setGear(Gear gearSpot);
+	void set(Gear gearSpot);
 	Gear getGearPosistion();
 
 private:

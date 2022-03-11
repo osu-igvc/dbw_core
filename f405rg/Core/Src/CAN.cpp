@@ -14,12 +14,12 @@
 #include <algorithm>
 
 
-std::unordered_map<CAN_HandleTypeDef*, CAN*> CAN::objectMap = std::unordered_map<CAN_HandleTypeDef*, CAN*>();
+std::map<CAN_HandleTypeDef*, CAN*> CAN::objectMap = std::map<CAN_HandleTypeDef*, CAN*>();
 
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	std::unordered_map<CAN_HandleTypeDef*, CAN*>::iterator itr = CAN::objectMap.find(hcan);
+	std::map<CAN_HandleTypeDef*, CAN*>::iterator itr = CAN::objectMap.find(hcan);
 	if(itr != CAN::objectMap.end()) itr->second->__fifo0MsgPendingIrq();
 }
 
@@ -77,7 +77,7 @@ CAN::~CAN() {
 	HAL_CAN_DeactivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING);
 	HAL_CAN_Stop(handle);
 
-	objectMap.clear();
+	objectMap.erase(handle);
 }
 
 

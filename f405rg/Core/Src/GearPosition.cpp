@@ -11,10 +11,10 @@
 GearPosition::GearPosition(GPIO_TypeDef* s1Port, uint16_t s1Pin, GPIO_TypeDef* s2Port, uint16_t s2Pin) :
 		s1(s1Port, s1Pin), s2(s2Port, s2Pin) {
 	gear = Gear::NEUTRAL;
-	setGear(gear);
+	set(gear);
 }
 
-void GearPosition::setGear(Gear gearSpot){
+void GearPosition::set(Gear gearSpot){
 	switch(gearSpot) {
 	case Gear::FORWARD:
 		s1 = 0;

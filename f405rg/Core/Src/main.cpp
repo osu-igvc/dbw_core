@@ -16,11 +16,13 @@
   ******************************************************************************
   */
 #include "main.h"
+
 #include "cmsis_os.h"
 #include "usb_device.h"
 
 #include "initDevice.h"
 
+#include "DigitalIn.h"
 #include "GearPosition.h"
 #include "BlinkThread.h"
 #include "CAN.h"
@@ -70,6 +72,7 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
 
+
   osKernelStart();
 
   // Should never get here
@@ -81,6 +84,10 @@ int main(void)
 
 
 
+DigitalOut led1(LD1_GPIO_Port, LD1_Pin);
+void cb(uint8_t value) {
+	led1 = !led1;
+}
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
@@ -93,26 +100,28 @@ void StartDefaultTask(void *argument)
 {
   MX_USB_DEVICE_Init();
 
-  //CAN can2(&hcan2, CAN2, CANID, 10, LD1_GPIO_Port, LD1_Pin);
+  CAN can2(&hcan2, CAN2, CANID, 10, LD1_GPIO_Port, LD1_Pin);
 
   DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
   DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
 
+  DigitalIn inTest(GPIOB, GPIO_PIN_0, GPIO_MODE_IT_RISING_FALLING, &cb);
+
   GearPosition gearSelect(GPIOB, GPIO_PIN_7, GPIOB, GPIO_PIN_8);
 
 
-  gearSelect.setGear(Gear::FORWARD);
+  gearSelect.set(Gear::FORWARD);
   uint8_t data[8] = "hello!";
 
   for(;;)
   {
-	//can2.send(data, 8);
+	can2.send(data, 8);
 
 
-	//if(can2.isAvailable()) {
-		//CanMsg msg = can2.read();
-		//if(msg.header.StdId == 0x411) led2 = !led2;
-	//}
+	if(can2.isAvailable()) {
+		CanMsg msg = can2.read();
+		if(msg.header.StdId == 0x411) led2 = !led2;
+	}
 
 	led3 = !led3;
 	osDelay(500);
