@@ -17,14 +17,11 @@
   */
 #include "main.h"
 
-#include "cmsis_os.h"
+//#include "cmsis_os.h"
 #include "usb_device.h"
 
 #include "initDevice.h"
 
-#include "DigitalIn.h"
-#include "GearPosition.h"
-#include "BlinkThread.h"
 #include "CAN.h"
 
 
@@ -38,14 +35,14 @@ uint16_t CANID = 0x412;
 uint16_t CANID = 0x400;
 #endif
 
-
+/*
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-
+*/
 
 
 
@@ -65,29 +62,40 @@ int main(void)
 {
   HAL_Init();
   initDevice();
+  MX_USB_DEVICE_Init();
 
-  osKernelInitialize();
+  //osKernelInitialize();
 
-  //BlinkThread* blinkLD2Task = new BlinkThread(LD2_GPIO_Port, LD2_Pin, 200, "blinkLD2Task");
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  //osKernelStart();
 
 
+  CAN can2(&hcan2, CAN2, CANID, 10, LD1_GPIO_Port, LD1_Pin);
 
-  osKernelStart();
+  DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
+  DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
 
+  uint8_t data[8] = "hello!";
   // Should never get here
   while (1)
   {
+	can2.send(data, 8);
 
+
+	bool avail = can2.isAvailable();
+	if(avail) {
+		CanMsg msg;
+		can2.read(&msg);
+		if(msg.header.StdId == 0x411) led2 = !led2;
+	}
+
+	led3 = !led3;
+	HAL_Delay(500);
   }
 }
 
 
-
-DigitalOut led1(LD1_GPIO_Port, LD1_Pin);
-void cb(uint8_t value) {
-	led1 = !led1;
-}
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
@@ -105,26 +113,22 @@ void StartDefaultTask(void *argument)
   DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
   DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
 
-  DigitalIn inTest(GPIOB, GPIO_PIN_0, GPIO_MODE_IT_RISING_FALLING, &cb);
-
-  GearPosition gearSelect(GPIOB, GPIO_PIN_7, GPIOB, GPIO_PIN_8);
-
-
-  gearSelect.set(Gear::FORWARD);
   uint8_t data[8] = "hello!";
 
   for(;;)
   {
-	can2.send(data, 8);
+	//can2.send(data, 8);
 
 
-	if(can2.isAvailable()) {
-		CanMsg msg = can2.read();
+	bool avail = false;//can2.isAvailable();
+	if(avail) {
+		CanMsg msg;
+		can2.read(&msg);
 		if(msg.header.StdId == 0x411) led2 = !led2;
 	}
 
 	led3 = !led3;
-	osDelay(500);
+	//osDelay(500);
   }
 }
 

@@ -7,9 +7,6 @@
 
 #include "CAN.h"
 
-#include "usbd_cdc_if.h"
-#include "cmsis_os.h"
-
 #include <cstring>
 #include <algorithm>
 
@@ -26,7 +23,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 
 
-CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t queueSize, GPIO_TypeDef* ledPort, uint16_t ledPin) : led(ledPort, ledPin){
+
+CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t queueSize, GPIO_TypeDef* ledPort, uint16_t ledPin) :
+		led(ledPort, ledPin), rxBuffer() {
 	// TODO Auto-generated constructor stub
 	this->handle = handle;
 
@@ -61,7 +60,6 @@ CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t que
 
 	HAL_CAN_ConfigFilter(handle, &canfilterconfig);
 
-
 	if(HAL_CAN_ActivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
 		Error_Handler();
 
@@ -76,6 +74,10 @@ CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t que
 CAN::~CAN() {
 	HAL_CAN_DeactivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING);
 	HAL_CAN_Stop(handle);
+
+	while(!rxBuffer.empty()) {
+		rxBuffer.pop();
+	}
 
 	objectMap.erase(handle);
 }
@@ -93,15 +95,13 @@ int CAN::send(uint8_t *dataArray, uint8_t numBytes) {
 	return 0;
 }
 
-CanMsg CAN::read() {
-	DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
+int CAN::read(CanMsg *msg) {
+	if(rxBuffer.empty()) return -1;
 
-	while(rxBuffer.empty()) osDelay(1);
-
-	CanMsg msg = rxBuffer.front();
+	*msg = rxBuffer.front();
 	rxBuffer.pop();
 
-	return msg;
+	return rxBuffer.size();
 }
 
 bool CAN::isAvailable() {
@@ -121,16 +121,14 @@ void CAN::__fifo0MsgPendingIrq() {
 		led = !led;
 	}
 
-	CanMsg canMsg;
-	canMsg.header = rxHeader;
 
-	std::memcpy(canMsg.data, rxData, sizeof(rxData));
+	if(rxBuffer.size() >= queueSize) {
+		rxBuffer.pop();
+	}
 
-	if(rxBuffer.size() >= queueSize) rxBuffer.pop();
-	rxBuffer.push(canMsg);
-
-
-	CDC_Transmit_FS(rxData, strlen((char*)rxData));
+	CanMsg msg = {.header=rxHeader};
+	memcpy(msg.data, rxData, sizeof(msg.data));
+	rxBuffer.push(msg);
 }
 
 

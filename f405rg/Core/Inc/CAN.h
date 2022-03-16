@@ -18,10 +18,12 @@
 #include <queue>
 
 
-struct CanMsg {
+typedef struct {
 	CAN_RxHeaderTypeDef header;
 	uint8_t data[8];
-};
+} CanMsg;
+
+
 
 
 class CAN {
@@ -30,7 +32,7 @@ public:
 	virtual ~CAN();
 
 	int send(uint8_t *data, uint8_t numBytes);
-	CanMsg read();
+	int read(CanMsg *msg);
 	bool isAvailable();
 
 	void __fifo0MsgPendingIrq();
