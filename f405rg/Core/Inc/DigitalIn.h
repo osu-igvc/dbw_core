@@ -31,10 +31,6 @@ public:
 	bool operator != (const int &val);
 	bool operator != (DigitalIn &obj);
 
-
-	static std::map<uint16_t, DigitalIn*> objectMap;
-
-
 private:
 	digitalInIRQCb cb;
 

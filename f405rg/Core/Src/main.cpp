@@ -18,13 +18,19 @@
 #include "main.h"
 
 #include "usb_device.h"
+#include "cmsis_os.h"
 
 #include "initDevice.h"
 #include "dbw_polaris_can/dispatch.h"
 
+#include "DashController.h"
+#include "Thread.h"
+
 #include "CAN.h"
 #include "DigitalOut.h"
 #include "PWM.h"
+
+#include <functional>
 
 typedef enum {
 	BRAKE_BOARD,
@@ -35,20 +41,6 @@ typedef enum {
 
 using namespace dbw_polaris_can;
 
-#define BOARD DASH_BOARD
-#if BOARD == DASH_BOARD
-uint16_t CANID_TX = ID_STEERING_REPORT;
-uint16_t CANID_RX = ID_STEERING_CMD;
-uint32_t delayTime = 200;
-#elif BOARD == BRAKE_BOARD
-uint16_t CANID_TX = ID_BRAKE_REPORT;
-uint16_t CANID_RX = ID_BRAKE_CMD;
-uint32_t delayTime = 500;
-#elif BOARD == LOW_LEVEL_CONTROLLER
-uint16_t CANID_TX = 0x412;
-uint16_t CANID_RX = 0x411;
-uint32_t delayTime = 500;
-#endif
 
 /*
  * Network layout
@@ -57,8 +49,8 @@ uint32_t delayTime = 500;
  * 		Contains <BOARD_TYPE; TIME; >
  */
 
-
 void canCb(CanMsg *msg);
+void dash(void *args);
 
 /**
   * @brief  The application entry point.
@@ -70,14 +62,19 @@ int main(void)
   initDevice();
   MX_USB_DEVICE_Init();
 
+  osKernelInitialize();
+
+
   BoardType boardType = BoardType::DASH_BOARD;
+
+  Thread *applicationThread;
 
   switch(boardType) {
   case BRAKE_BOARD:
 
 	  break;
   case DASH_BOARD:
-
+	  applicationThread = new DashController("DashController", 500);
 	  break;
   case LOW_LEVEL_CONTROLLER:
 
@@ -87,31 +84,6 @@ int main(void)
 	  break;
   }
 
-
-
-  CAN can2(CAN2, 10);
-  can2.subscribe(CANID_RX, canCb);
-
-  PWM led1(TIM3, TIM_CHANNEL_1);
-
-  DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
-
-  uint8_t data[8] = "hello!";
-
-  int incr = 0;
-
-  while (1)
-  {
-	can2.send(CANID_TX, data);
-
-	led1 = (incr++ % 11)/10.0;
-
-	led3 = !led3;
-	HAL_Delay(delayTime);
-  }
-}
-
-static DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
-void canCb(CanMsg *msg) {
-	led2 = !led2;
+  osKernelStart();
+  Error_Handler();	// Should never get to this line
 }

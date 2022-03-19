@@ -9,16 +9,18 @@
 
 #include <cstring>
 #include <algorithm>
+#include "cmsis_os.h"
 
 CAN_HandleTypeDef hcan1, hcan2;
 
-std::unordered_map<CAN_HandleTypeDef*, CAN*> CAN::objectMap = std::unordered_map<CAN_HandleTypeDef*, CAN*>();
-
+namespace {
+std::map<CAN_HandleTypeDef*, CAN*> objectMap = std::map<CAN_HandleTypeDef*, CAN*>();
+}
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	std::unordered_map<CAN_HandleTypeDef*, CAN*>::iterator itr = CAN::objectMap.find(hcan);
-	if(itr != CAN::objectMap.end()) itr->second->__fifo0MsgPendingIrq();
+	std::map<CAN_HandleTypeDef*, CAN*>::iterator itr = objectMap.find(hcan);
+	if(itr != objectMap.end()) itr->second->__fifo0MsgPendingIrq();
 }
 
 
@@ -29,7 +31,7 @@ CAN::CAN(CAN_TypeDef *base, uint16_t queueSize) :
 	this->cb = NULL;
 }
 
-CAN::CAN(CAN_TypeDef *base, CANIRQCb cb, uint16_t queueSize) :
+CAN::CAN(CAN_TypeDef *base, CANIrqCb cb, uint16_t queueSize) :
 		rxBuffer() {
 	init(base, queueSize);
 	this->cb = cb;
@@ -114,8 +116,8 @@ int CAN::read(CanMsg *msg) {
 	return rxBuffer.size();
 }
 
-void CAN::subscribe(uint16_t id, CANIRQCb cb) {
-	subscriptions.insert(std::pair<uint16_t, CANIRQCb>(id, cb));
+void CAN::subscribe(uint16_t id, CANIrqCb cb) {
+	subscriptions.insert(std::pair<uint16_t, CANIrqCb>(id, cb));
 	return;
 }
 
@@ -142,6 +144,6 @@ void CAN::__fifo0MsgPendingIrq() {
 
 	if(cb != NULL) cb(&msg);
 
-	std::unordered_map<uint16_t, CANIRQCb>::iterator itr = subscriptions.find(rxHeader.StdId);
+	std::map<uint16_t, CANIrqCb>::iterator itr = subscriptions.find(rxHeader.StdId);
 	if(itr != subscriptions.end()) itr->second(&msg);
 }

@@ -11,14 +11,13 @@
 #include <cstring>
 #include <algorithm>
 
-std::map<uint16_t, DigitalIn*> DigitalIn::objectMap = std::map<uint16_t, DigitalIn*>();
-
-
-
+namespace {
+std::map<uint16_t, DigitalIn*> objectMap = std::map<uint16_t, DigitalIn*>();
+}
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	std::map<uint16_t, DigitalIn*>::iterator itr = DigitalIn::objectMap.find(GPIO_Pin);
-	if(itr != DigitalIn::objectMap.end()) itr->second->__EXTI_Interrupt_CB();
+	std::map<uint16_t, DigitalIn*>::iterator itr = objectMap.find(GPIO_Pin);
+	if(itr != objectMap.end()) itr->second->__EXTI_Interrupt_CB();
 }
 
 
@@ -76,7 +75,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t interruptMode, d
 	this->pin  = pin;
 	this->cb = cb;
 
-	std::map<uint16_t, DigitalIn*>::iterator itr = DigitalIn::objectMap.find(pin);
+	std::map<uint16_t, DigitalIn*>::iterator itr = objectMap.find(pin);
 	if(itr != objectMap.end()) Error_Handler();
 
 	objectMap.insert(std::pair<uint16_t, DigitalIn*>(pin, this));
@@ -99,7 +98,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t pullMode, uint32
 
 
 DigitalIn::~DigitalIn() {
-	std::map<uint16_t, DigitalIn*>::iterator itr = DigitalIn::objectMap.find(pin);
+	std::map<uint16_t, DigitalIn*>::iterator itr = objectMap.find(pin);
 	if(itr != objectMap.end())
 		objectMap.erase(pin);
 }

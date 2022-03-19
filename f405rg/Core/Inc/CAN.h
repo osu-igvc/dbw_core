@@ -11,8 +11,9 @@
 
 #include "stm32f4xx_hal.h"
 
-#include <unordered_map>
+#include <map>
 #include <queue>
+#include <functional>
 
 #include "main.h"
 
@@ -23,29 +24,27 @@ typedef struct {
 } CanMsg;
 
 
-typedef void (*CANIRQCb)(CanMsg *msg);
+typedef std::function<void(CanMsg*)> CANIrqCb;
 
 class CAN {
 public:
 	CAN(CAN_TypeDef* base, uint16_t queueSize=10);
-	CAN(CAN_TypeDef* base, CANIRQCb cb, uint16_t queueSize=10);
+	CAN(CAN_TypeDef* base, CANIrqCb cb, uint16_t queueSize=10);
 	virtual ~CAN();
 
 	int send(uint16_t id, uint8_t data[8]);
 	int read(CanMsg *msg);
-	void subscribe(uint16_t id, CANIRQCb cb);
+	//template<class T> void subscribe(uint16_t id, void (T::*)(CanMsg *msg) cb, T *obj);
+	void subscribe(uint16_t id, CANIrqCb cb);
 
 	bool isAvailable();
 
 	void __fifo0MsgPendingIrq();
 
-	static std::unordered_map<CAN_HandleTypeDef*, CAN*> objectMap;
-
-
 private:
 	void init(CAN_TypeDef* base, uint16_t queueSize);
 
-	CANIRQCb cb;
+	CANIrqCb cb;
 
 	CAN_HandleTypeDef *handle;
 
@@ -58,7 +57,7 @@ private:
 	std::queue<CanMsg> rxBuffer;
 	uint16_t queueSize;
 
-	std::unordered_map<uint16_t, CANIRQCb> subscriptions;
+	std::map<uint16_t, CANIrqCb> subscriptions;
 };
 
 #endif /* SRC_CAN_H_ */
