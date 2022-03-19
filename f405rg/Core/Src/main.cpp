@@ -49,8 +49,6 @@ using namespace dbw_polaris_can;
  * 		Contains <BOARD_TYPE; TIME; >
  */
 
-void canCb(CanMsg *msg);
-void dash(void *args);
 
 /**
   * @brief  The application entry point.
