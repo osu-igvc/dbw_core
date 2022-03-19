@@ -10,12 +10,11 @@
 #define SRC_CAN_H_
 
 #include "stm32f4xx_hal.h"
-#include "DigitalOut.h"
-#define LD2_Pin GPIO_PIN_5
-#define LD2_GPIO_Port GPIOB
 
-#include <map>
+#include <unordered_map>
 #include <queue>
+
+#include "main.h"
 
 
 typedef struct {
@@ -24,26 +23,29 @@ typedef struct {
 } CanMsg;
 
 
-
+typedef void (*CANIRQCb)(CanMsg *msg);
 
 class CAN {
 public:
-	CAN(CAN_HandleTypeDef *handle, CAN_TypeDef* base, uint16_t id, uint16_t queueSize=10, GPIO_TypeDef* port = GPIOB, uint16_t = GPIO_PIN_5);
+	CAN(CAN_TypeDef* base, uint16_t queueSize=10);
+	CAN(CAN_TypeDef* base, CANIRQCb cb, uint16_t queueSize=10);
 	virtual ~CAN();
 
-	int send(uint8_t *data, uint8_t numBytes);
+	int send(uint16_t id, uint8_t data[8]);
 	int read(CanMsg *msg);
+	void subscribe(uint16_t id, CANIRQCb cb);
+
 	bool isAvailable();
 
 	void __fifo0MsgPendingIrq();
 
-	DigitalOut led;
-
-	static std::map<CAN_HandleTypeDef*, CAN*> objectMap;
+	static std::unordered_map<CAN_HandleTypeDef*, CAN*> objectMap;
 
 
 private:
-	void Error_Handler(void);
+	void init(CAN_TypeDef* base, uint16_t queueSize);
+
+	CANIRQCb cb;
 
 	CAN_HandleTypeDef *handle;
 
@@ -55,6 +57,8 @@ private:
 
 	std::queue<CanMsg> rxBuffer;
 	uint16_t queueSize;
+
+	std::unordered_map<uint16_t, CANIRQCb> subscriptions;
 };
 
 #endif /* SRC_CAN_H_ */

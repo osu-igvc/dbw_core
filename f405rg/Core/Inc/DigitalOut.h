@@ -22,6 +22,7 @@ public:
 
 	void operator = (const int &val);
 	bool operator ! ();
+	bool operator == (const bool &state);
 protected:
 	uint8_t state;
 private:

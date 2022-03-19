@@ -136,6 +136,20 @@ static void MX_GPIO_Init(void)
 }*/
 
 
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
 
 
 #ifdef  USE_FULL_ASSERT

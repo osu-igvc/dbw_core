@@ -17,42 +17,48 @@
   */
 #include "main.h"
 
-//#include "cmsis_os.h"
 #include "usb_device.h"
 
 #include "initDevice.h"
+#include "dbw_polaris_can/dispatch.h"
 
 #include "CAN.h"
+#include "DigitalOut.h"
+#include "PWM.h"
 
+typedef enum {
+	BRAKE_BOARD,
+	DASH_BOARD,
+	LOW_LEVEL_CONTROLLER,
+	DUAL_CAN
+} BoardType;
 
-#define BOARD 2
+using namespace dbw_polaris_can;
 
-#if BOARD == 1
-uint16_t CANID = 0x411;
-#elif BOARD == 2
-uint16_t CANID = 0x412;
-#else
-uint16_t CANID = 0x400;
+#define BOARD DASH_BOARD
+#if BOARD == DASH_BOARD
+uint16_t CANID_TX = ID_STEERING_REPORT;
+uint16_t CANID_RX = ID_STEERING_CMD;
+uint32_t delayTime = 200;
+#elif BOARD == BRAKE_BOARD
+uint16_t CANID_TX = ID_BRAKE_REPORT;
+uint16_t CANID_RX = ID_BRAKE_CMD;
+uint32_t delayTime = 500;
+#elif BOARD == LOW_LEVEL_CONTROLLER
+uint16_t CANID_TX = 0x412;
+uint16_t CANID_RX = 0x411;
+uint32_t delayTime = 500;
 #endif
 
 /*
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-*/
+ * Network layout
+ * 	Each board assigned a META message
+ * 		Used as a heartbeat
+ * 		Contains <BOARD_TYPE; TIME; >
+ */
 
 
-
-void StartDefaultTask(void *argument);
-void BlinkLD2Task(void *argument);
-
-CAN_HandleTypeDef hcan1;
-CAN_HandleTypeDef hcan2;
-
-
+void canCb(CanMsg *msg);
 
 /**
   * @brief  The application entry point.
@@ -64,84 +70,48 @@ int main(void)
   initDevice();
   MX_USB_DEVICE_Init();
 
-  //osKernelInitialize();
+  BoardType boardType = BoardType::DASH_BOARD;
 
-  //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  switch(boardType) {
+  case BRAKE_BOARD:
 
-  //osKernelStart();
+	  break;
+  case DASH_BOARD:
 
+	  break;
+  case LOW_LEVEL_CONTROLLER:
 
-  CAN can2(&hcan2, CAN2, CANID, 10, LD1_GPIO_Port, LD1_Pin);
+	  break;
+  case DUAL_CAN:
 
-  DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
-  DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
-
-  uint8_t data[8] = "hello!";
-  // Should never get here
-  while (1)
-  {
-	can2.send(data, 8);
-
-
-	bool avail = can2.isAvailable();
-	if(avail) {
-		CanMsg msg;
-		can2.read(&msg);
-		if(msg.header.StdId == 0x411) led2 = !led2;
-	}
-
-	led3 = !led3;
-	HAL_Delay(500);
+	  break;
   }
-}
 
 
 
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  MX_USB_DEVICE_Init();
+  CAN can2(CAN2, 10);
+  can2.subscribe(CANID_RX, canCb);
 
-  CAN can2(&hcan2, CAN2, CANID, 10, LD1_GPIO_Port, LD1_Pin);
+  PWM led1(TIM3, TIM_CHANNEL_1);
 
-  DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
   DigitalOut led3(LD3_GPIO_Port, LD3_Pin);
 
   uint8_t data[8] = "hello!";
 
-  for(;;)
+  int incr = 0;
+
+  while (1)
   {
-	//can2.send(data, 8);
+	can2.send(CANID_TX, data);
 
-
-	bool avail = false;//can2.isAvailable();
-	if(avail) {
-		CanMsg msg;
-		can2.read(&msg);
-		if(msg.header.StdId == 0x411) led2 = !led2;
-	}
+	led1 = (incr++ % 11)/10.0;
 
 	led3 = !led3;
-	//osDelay(500);
+	HAL_Delay(delayTime);
   }
 }
 
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+static DigitalOut led2(LD2_GPIO_Port, LD2_Pin);
+void canCb(CanMsg *msg) {
+	led2 = !led2;
 }

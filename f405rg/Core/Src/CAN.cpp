@@ -10,26 +10,47 @@
 #include <cstring>
 #include <algorithm>
 
+CAN_HandleTypeDef hcan1, hcan2;
 
-std::map<CAN_HandleTypeDef*, CAN*> CAN::objectMap = std::map<CAN_HandleTypeDef*, CAN*>();
+std::unordered_map<CAN_HandleTypeDef*, CAN*> CAN::objectMap = std::unordered_map<CAN_HandleTypeDef*, CAN*>();
 
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	std::map<CAN_HandleTypeDef*, CAN*>::iterator itr = CAN::objectMap.find(hcan);
+	std::unordered_map<CAN_HandleTypeDef*, CAN*>::iterator itr = CAN::objectMap.find(hcan);
 	if(itr != CAN::objectMap.end()) itr->second->__fifo0MsgPendingIrq();
 }
 
 
 
+CAN::CAN(CAN_TypeDef *base, uint16_t queueSize) :
+		rxBuffer() {
+	init(base, queueSize);
+	this->cb = NULL;
+}
+
+CAN::CAN(CAN_TypeDef *base, CANIRQCb cb, uint16_t queueSize) :
+		rxBuffer() {
+	init(base, queueSize);
+	this->cb = cb;
+}
+
+CAN::~CAN() {
+	HAL_CAN_DeactivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING);
+	HAL_CAN_Stop(handle);
+
+	while(!rxBuffer.empty()) {
+		rxBuffer.pop();
+	}
+
+	objectMap.erase(handle);
+}
 
 
-CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t queueSize, GPIO_TypeDef* ledPort, uint16_t ledPin) :
-		led(ledPort, ledPin), rxBuffer() {
-	// TODO Auto-generated constructor stub
-	this->handle = handle;
+void CAN::init(CAN_TypeDef *base, uint16_t queueSize) {
+	this->handle = (base == CAN1) ? &hcan1 : &hcan2;
 
-	handle->Instance 				= base;
+	handle->Instance = base;
 	handle->Init.Prescaler = 6;
 	handle->Init.Mode = CAN_MODE_NORMAL;
 	handle->Init.SyncJumpWidth = CAN_SJW_2TQ;
@@ -46,7 +67,6 @@ CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t que
 		Error_Handler();
 
 	txHeader.IDE 	= CAN_ID_STD;
-	txHeader.StdId 	= id;
 	txHeader.RTR 	= CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
 
@@ -71,20 +91,10 @@ CAN::CAN(CAN_HandleTypeDef *handle, CAN_TypeDef *base, uint16_t id, uint16_t que
 	this->queueSize = queueSize;
 }
 
-CAN::~CAN() {
-	HAL_CAN_DeactivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING);
-	HAL_CAN_Stop(handle);
 
-	while(!rxBuffer.empty()) {
-		rxBuffer.pop();
-	}
-
-	objectMap.erase(handle);
-}
-
-
-int CAN::send(uint8_t *dataArray, uint8_t numBytes) {
-	txHeader.DLC = numBytes;
+int CAN::send(uint16_t id, uint8_t dataArray[8]) {
+	txHeader.DLC = 8;
+	txHeader.StdId 	= id;
 
 	if(HAL_CAN_GetTxMailboxesFreeLevel(handle) == 0)
 		return -1;
@@ -104,6 +114,11 @@ int CAN::read(CanMsg *msg) {
 	return rxBuffer.size();
 }
 
+void CAN::subscribe(uint16_t id, CANIRQCb cb) {
+	subscriptions.insert(std::pair<uint16_t, CANIRQCb>(id, cb));
+	return;
+}
+
 bool CAN::isAvailable() {
 	return !rxBuffer.empty();
 }
@@ -117,11 +132,6 @@ void CAN::__fifo0MsgPendingIrq() {
 		Error_Handler();
 	}
 
-	if(rxHeader.StdId == 0x411) {
-		led = !led;
-	}
-
-
 	if(rxBuffer.size() >= queueSize) {
 		rxBuffer.pop();
 	}
@@ -129,14 +139,9 @@ void CAN::__fifo0MsgPendingIrq() {
 	CanMsg msg = {.header=rxHeader};
 	memcpy(msg.data, rxData, sizeof(msg.data));
 	rxBuffer.push(msg);
-}
 
+	if(cb != NULL) cb(&msg);
 
-
-void CAN::Error_Handler(void) {
-	__disable_irq();
-	while(1)
-	{
-
-	}
+	std::unordered_map<uint16_t, CANIRQCb>::iterator itr = subscriptions.find(rxHeader.StdId);
+	if(itr != subscriptions.end()) itr->second(&msg);
 }

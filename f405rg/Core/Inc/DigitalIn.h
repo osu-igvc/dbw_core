@@ -13,13 +13,13 @@
 
 #include <map>
 
-typedef void (*digitalInIQRCb)(uint8_t pinValue);
+typedef void (*digitalInIRQCb)(uint8_t pinValue);
 
 
 
 class DigitalIn {
 public:
-	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t interruptMode, digitalInIQRCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
+	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t interruptMode, digitalInIRQCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	virtual ~DigitalIn();
 
@@ -36,7 +36,7 @@ public:
 
 
 private:
-	digitalInIQRCb cb;
+	digitalInIRQCb cb;
 
 	GPIO_TypeDef *port;
 	uint16_t pin;

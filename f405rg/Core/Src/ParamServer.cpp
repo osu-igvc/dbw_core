@@ -9,6 +9,7 @@
 #include "main.h"
 
 
+
 ParamServer::ParamServer(uint16_t ADDRESS, uint16_t V_Address) {
 	(ADDRESS == 0) ? (PAGE_BASE_ADDRESS == PAGE0_BASE_ADDRESS) : (PAGE_BASE_ADDRESS == PAGE1_BASE_ADDRESS);
 
@@ -48,8 +49,3 @@ uint16_t ParamServer::read(uint16_t V_Address){
 
 	return 0;
 }
-
-
-
-
-

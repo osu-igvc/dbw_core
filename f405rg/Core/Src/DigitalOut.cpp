@@ -35,6 +35,10 @@ void DigitalOut::reset() {
 	state = 0;
 }
 
+bool DigitalOut::getState() {
+	return (state == 1) ? true : false;
+}
+
 void DigitalOut::operator = (const int &val) {
 	switch(val) {
 	case 0:
@@ -51,5 +55,9 @@ void DigitalOut::operator = (const int &val) {
 
 bool DigitalOut::operator ! () {
 	return (state == 0) ? 1 : 0;
+}
+
+bool DigitalOut::operator == (const bool &state) {
+	return getState() == state;
 }
 
