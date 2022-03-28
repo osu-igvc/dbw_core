@@ -13,13 +13,17 @@
 
 #include <map>
 
-typedef void (*digitalInIRQCb)(uint8_t pinValue);
+typedef void (*digitalInIQRCb)(uint8_t pinValue);
 
-
+typedef enum {
+	RISE,
+	FALL,
+	CHANGE
+} InterruptMode;
 
 class DigitalIn {
 public:
-	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t interruptMode, digitalInIRQCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
+	DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIQRCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	virtual ~DigitalIn();
 
@@ -31,8 +35,12 @@ public:
 	bool operator != (const int &val);
 	bool operator != (DigitalIn &obj);
 
+
+	static std::map<uint16_t, DigitalIn*> objectMap;
+
+
 private:
-	digitalInIRQCb cb;
+	digitalInIQRCb cb;
 
 	GPIO_TypeDef *port;
 	uint16_t pin;

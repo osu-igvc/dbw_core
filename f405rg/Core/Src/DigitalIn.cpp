@@ -11,23 +11,41 @@
 #include <cstring>
 #include <algorithm>
 
-namespace {
-std::map<uint16_t, DigitalIn*> objectMap = std::map<uint16_t, DigitalIn*>();
+std::map<uint16_t, DigitalIn*> DigitalIn::objectMap = std::map<uint16_t, DigitalIn*>();
+
+
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	std::map<uint16_t, DigitalIn*>::iterator itr = DigitalIn::objectMap.find(GPIO_Pin);
+	if(itr != DigitalIn::objectMap.end()) itr->second->__EXTI_Interrupt_CB();
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	std::map<uint16_t, DigitalIn*>::iterator itr = objectMap.find(GPIO_Pin);
-	if(itr != objectMap.end()) itr->second->__EXTI_Interrupt_CB();
-}
 
 
+DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, DigitalIn interruptMode, digitalInIQRCb cb, uint32_t pullMode, uint32_t speed) {
 
-DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t interruptMode, digitalInIRQCb cb, uint32_t pullMode, uint32_t speed) {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = pin;
-	GPIO_InitStruct.Mode = interruptMode;
 	GPIO_InitStruct.Pull = pullMode;
 	GPIO_InitStruct.Speed = speed;
+
+
+	uint32_t mode;
+	switch(interruptMode) {
+	case RISING:
+		mode = GPIO_MODE_IT_RISING;
+		break;
+	case FALL:
+		mode = GPIO_MODE_IT_FALLING;
+		break;
+	case CHANGE:
+		mode = GPIO_MODE_IT_RISING_FALLING;
+		break;
+	default:
+		Error_Handler();
+	}
+	GPIO_InitStruct.Mode = mode;
 	HAL_GPIO_Init(port, &GPIO_InitStruct);
 
 	IRQn_Type irqType;
@@ -75,7 +93,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t interruptMode, d
 	this->pin  = pin;
 	this->cb = cb;
 
-	std::map<uint16_t, DigitalIn*>::iterator itr = objectMap.find(pin);
+	std::map<uint16_t, DigitalIn*>::iterator itr = DigitalIn::objectMap.find(pin);
 	if(itr != objectMap.end()) Error_Handler();
 
 	objectMap.insert(std::pair<uint16_t, DigitalIn*>(pin, this));
@@ -98,7 +116,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t pullMode, uint32
 
 
 DigitalIn::~DigitalIn() {
-	std::map<uint16_t, DigitalIn*>::iterator itr = objectMap.find(pin);
+	std::map<uint16_t, DigitalIn*>::iterator itr = DigitalIn::objectMap.find(pin);
 	if(itr != objectMap.end())
 		objectMap.erase(pin);
 }
