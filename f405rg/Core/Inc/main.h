@@ -81,10 +81,12 @@ void Error_Handler(void);
 #define ethernet_led_1_GPIO_Port GPIOB
 #define ethernet_led_2_Pin GPIO_PIN_10
 #define ethernet_led_2_GPIO_Port GPIOB
-#define quad_ch_2_Pin GPIO_PIN_15
-#define quad_ch_2_GPIO_Port GPIOB
-#define quad_ch_1_Pin GPIO_PIN_6
-#define quad_ch_1_GPIO_Port GPIOC
+#define quad_ch2_Pin GPIO_PIN_15
+#define quad_ch2_GPIO_Port GPIOB
+#define quad_ch2_EXTI_IRQn EXTI15_10_IRQn
+#define quad_ch1_Pin GPIO_PIN_6
+#define quad_ch1_GPIO_Port GPIOC
+#define quad_ch1_EXTI_IRQn EXTI9_5_IRQn
 #define extra_conn_Pin GPIO_PIN_7
 #define extra_conn_GPIO_Port GPIOC
 #define EStop_Pin GPIO_PIN_8

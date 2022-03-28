@@ -28,11 +28,10 @@ uint8_t DigitalIn::read() {
 	return (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) ? 1 : 0;
 }
 
-
-
 bool DigitalIn::operator == (const int &val) {
 	return (read() == val);
 }
+
 bool DigitalIn::operator == (DigitalIn &obj) {
 	return (read() == obj.read());
 }
@@ -40,6 +39,7 @@ bool DigitalIn::operator == (DigitalIn &obj) {
 bool DigitalIn::operator !=  (const int &val) {
 	return (read() != val);
 }
+
 bool DigitalIn::operator != (DigitalIn &obj) {
 	return (read() != obj.read());
 }

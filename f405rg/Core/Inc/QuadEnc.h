@@ -12,7 +12,7 @@
 
 #include "stm32f4xx_hal.h"
 
-class QuadEnc	: public Thread<QuadEnc> {
+class QuadEnc	: public QuadEnc {
 public:
 	QuadEnc(const char *name, uint32_t stack_size = 512, osPriority_t priority = (osPriority_t)osPriorityNormal);
 	virtual ~QuadEnc();
