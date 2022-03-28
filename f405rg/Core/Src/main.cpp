@@ -15,6 +15,7 @@
   *
   ******************************************************************************
   */
+#include <CAN.h>
 #include "main.h"
 
 #include "usb_device.h"
@@ -24,10 +25,11 @@
 #include "dbw_polaris_can/dispatch.h"
 
 #include "DashController.h"
+#include "BrakeController.h"
 #include "Thread.h"
 
-#include "CAN.h"
 #include "DigitalOut.h"
+#include "ParamServer.h"
 #include "PWM.h"
 
 #include <functional>
@@ -60,16 +62,21 @@ int main(void)
   initDevice();
   MX_USB_DEVICE_Init();
 
+
+  CAN can2(CAN2, 2);
+
+
+
   osKernelInitialize();
 
 
-  BoardType boardType = BoardType::DASH_BOARD;
+  BoardType boardType = BoardType::BRAKE_BOARD;
 
   Thread *applicationThread;
 
   switch(boardType) {
   case BRAKE_BOARD:
-
+	  applicationThread = new BrakeController("BrakeController", 200, &can2);
 	  break;
   case DASH_BOARD:
 	  applicationThread = new DashController("DashController", 500);
