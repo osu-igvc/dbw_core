@@ -9,14 +9,15 @@
 #include "QuadEnc.h"
 
 QuadEnc::QuadEnc() {
+  HAL_TIM_IC_MspInit();
+  HAL_RCC_TIM8_CLK_ENABLE();
+  HAL_RCC_GPIO8_CLK_ENABLE();
   HAL_TIM_IC_Start_IT(&htim8, TIM_CHANNEL_1);   // main channel
   HAL_TIM_IC_Start(&htim8, TIM_CHANNEL_2);   // indirect channel
 
   HAL_TIM_IC_Start_IT(&htim12, TIM_CHANNEL_1);   // main channel
   HAL_TIM_IC_Start(&htim12, TIM_CHANNEL_2);   // indirect channel
 
-	this->ch1 = ch1;
-	this->ch2 = ch2;
   this->currentPos = 0;
   this->previousPos = 0;
   memset(this->positions, 0);
