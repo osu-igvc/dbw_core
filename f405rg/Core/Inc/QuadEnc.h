@@ -8,8 +8,7 @@
 #ifndef QUADENC_H_
 #define QUADENC_H_
 
-#define POS 1
-#define NEG 0
+#define INPERPULSE 0.000878
 
 #include <Thread.h>
 
