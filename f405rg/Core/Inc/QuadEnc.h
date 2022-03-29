@@ -16,10 +16,12 @@
 
 class QuadEnc{
 public:
-	QuadEnc(const char *name, uint32_t stack_size = 512, osPriority_t priority = (osPriority_t)osPriorityNormal);
+	QuadEnc(DigitalIn &ch1, DigitalIn &ch2);
 	virtual ~QuadEnc();
 
+	digitalInIQRCb ch1_cb();
 	uint16_t getCount();
+	double getPosition();
 	void resetCount();
 	uint16_t getSpeed();
 	void run(void *argument);

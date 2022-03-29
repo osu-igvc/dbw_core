@@ -68,6 +68,6 @@ uint16_t QuadEnc::getSpeed(){
         speed += positions[0][i];
     }
 
-    speed = speed / (positions[1][0] + positions[1][10])
+    speed = speed / (positions[1][0] + positions[1][10]);
     return speed;
 }
