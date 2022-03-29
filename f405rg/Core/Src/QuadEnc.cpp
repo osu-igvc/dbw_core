@@ -27,14 +27,16 @@ QuadEnc::~QuadEnc() {
     the count based on ch2 previous and current state.
 */
 digitalInIQRCb QuadEnc::ch1_cb(uint8_t value) {
-  ch2Cur = ch2.read();
-  if(ch2Cur > ch2Prev){
-    count++;
-    ch2Prev = ch2Cur;
-  }else{
-    count--;
-    ch2Prev = ch2Cur;
-  }
+    ch2Cur = ch2.read();
+    if(ch2Cur > ch2Prev){
+        count++;
+        ch2Prev = ch2Cur;
+    }else if(ch2Cur < ch2Prev){
+        count--;
+        ch2Prev = ch2Cur;
+    }else{
+
+    }
 }
 
 /*
