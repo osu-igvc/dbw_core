@@ -8,6 +8,9 @@
 #ifndef QUADENC_H_
 #define QUADENC_H_
 
+#define POS 1
+#define NEG 0
+
 #include <Thread.h>
 
 #include "stm32f4xx_hal.h"
@@ -18,17 +21,13 @@ public:
 	virtual ~QuadEnc();
 
 	uint16_t getCount();
-	void setCount();
 	void resetCount();
 	uint16_t getSpeed();
 	void run(void *argument);
 
-protected:
-	ThreadArg<QuadEnc> *threadArgs;
-
 private:
-	uint16_t currentPos;
-	uint16_t previousPos;
+	uint8_t count;
+	uint8_t ch2Prev;
 	uint16_t positions[2][10];
 };
 

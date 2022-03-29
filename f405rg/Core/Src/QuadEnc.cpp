@@ -15,27 +15,33 @@ QuadEnc::QuadEnc(DigitalIn &ch1, DigitalIn &ch2) {
   this->currentPos = 0;
   this->previousPos = 0;
   memset(this->positions, 0);
+  ch2Prev = ch2.read();
 }
 
 QuadEnc::~QuadEnc() {
 
 }
 
+digitalInIQRCb QuadEnc::ch1_cb(uint8_t value) {
+  ch2Cur = ch2.read();
+  if(ch2Cur > ch2Prev){
+    count++;
+    ch2Prev = ch2Cur;
+  }else{
+    count--;
+    ch2Prev = ch2Cur;
+  }
+}
+
+
 uint16_t QuadEnc::getCount() {
-	return
+	return this->count;
 }
 
 void QuadEnc::resetCount(){
-  this->currentPos = 0;
-  this->previousPos = 0;
+  this->count = 0;
 }
 
-void QuadEnc::setCount(uint16_t count){
-  if(count != this->currentPos){
-    this->previousPos = this->currentPos;
-    this->currentPos = count;
-  }
-}
 
 uint16_t QuadEnc::getSpeed(){
   uint16_t speed = 0;
