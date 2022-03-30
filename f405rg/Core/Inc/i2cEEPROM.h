@@ -8,7 +8,7 @@
 #ifndef i2cEEPROM_H_
 #define i2cEEPROM_H_
 
-#define ADDR
+#define ADDR 0b1010000
 
 #include "stm32f4xx_hal.h"
 
