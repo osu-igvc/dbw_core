@@ -17,17 +17,17 @@
 
 class DashController : public Thread {
 public:
-	DashController(const char *name, int period_ms, uint32_t stack_size = 512);
+	DashController(const char *name, int period_ms, PWM *led1, DigitalOut *led2, DigitalOut *led3, CAN *can2, uint32_t stack_size = 512);
 	virtual ~DashController();
 
 	void run(void *argument);
-	void canLed2Cb(const CanMsg &msg);
+	void canLed2Cb(CanMsg &msg);
 
 private:
 	int period_ms;
 
-	PWM led1;
-	DigitalOut led2, led3;
+	PWM *led1;
+	DigitalOut *led2, *led3;
 	CAN *can2;
 };
 

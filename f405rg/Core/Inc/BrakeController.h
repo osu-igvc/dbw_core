@@ -16,7 +16,8 @@
 
 class BrakeController: public Thread {
 public:
-	BrakeController(const char *name, int period_ms, CAN *can2, uint32_t stack_size = 512);
+	BrakeController(const char *name, int period_ms, DigitalOut *led1, DigitalOut *led2,
+			DigitalOut *led3, CAN *can2, uint32_t stack_size = 512);
 	virtual ~BrakeController();
 
 	void run(void *argument);
@@ -25,11 +26,11 @@ private:
 	void thread1(void *argument);
 	void thread2(void *argument);
 
-	void canLed2Cb();
+	void canLed2Cb(CanMsg &msg);
 
 	int period_ms;
 
-	DigitalOut led1, led2, led3;
+	DigitalOut *led1, *led2, *led3;
 	CAN *can2;
 };
 

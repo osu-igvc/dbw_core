@@ -20,15 +20,16 @@ public:
 
 	void set();
 	void reset();
+	void toggle();
 
 	void operator = (const int &val);
 	bool operator ! ();
 	bool operator == (const bool &state);
-protected:
-	uint8_t state;
+
 private:
 	GPIO_TypeDef* port;
 	uint16_t pin;
+	uint8_t state;
 };
 
 

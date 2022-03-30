@@ -63,9 +63,6 @@ int main(void)
   MX_USB_DEVICE_Init();
 
 
-  CAN can2(CAN2, 2);
-
-
 
   osKernelInitialize();
 
@@ -74,20 +71,25 @@ int main(void)
 
   Thread *applicationThread;
 
-  switch(boardType) {
-  case BRAKE_BOARD:
-	  applicationThread = new BrakeController("BrakeController", 200, &can2);
-	  break;
-  case DASH_BOARD:
-	  applicationThread = new DashController("DashController", 500);
-	  break;
-  case LOW_LEVEL_CONTROLLER:
-
-	  break;
-  case DUAL_CAN:
-
-	  break;
+  if(boardType == BRAKE_BOARD) {
+	  DigitalOut *led1 = new DigitalOut(LD1_GPIO_Port, LD1_Pin);
+	  DigitalOut *led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
+	  DigitalOut *led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
+	  CAN *can2 = new CAN(CAN2, 2);
+	  applicationThread = new BrakeController("BrakeController", 200, led1, led2, led3, can2, 1024);
   }
+  else if(boardType == DASH_BOARD) {
+	  PWM 		 *led1 = new PWM(TIM3, TIM_CHANNEL_1);
+	  DigitalOut *led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
+	  DigitalOut *led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
+	  CAN 		 *can2 = new CAN(CAN2, 2);
+
+	  applicationThread = new DashController("DashController", 100, led1, led2, led3, can2, 1024);
+  }
+  else if(boardType == LOW_LEVEL_CONTROLLER) {}
+  else if(boardType == DUAL_CAN) {}
+  else
+	  Error_Handler();
 
   osKernelStart();
   Error_Handler();	// Should never get to this line

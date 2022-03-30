@@ -27,6 +27,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticSemaphore_t osStaticMutexDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -53,6 +54,19 @@ const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for can2Mutex */
+osMutexId_t can2MutexHandle;
+osStaticMutexDef_t can2MutexControlBlock;
+const osMutexAttr_t can2Mutex_attributes = {
+  .name = "can2Mutex",
+  .cb_mem = &can2MutexControlBlock,
+  .cb_size = sizeof(can2MutexControlBlock),
+};
+/* Definitions for myMutex02 */
+osMutexId_t myMutex02Handle;
+const osMutexAttr_t myMutex02_attributes = {
+  .name = "myMutex02"
 };
 /* USER CODE BEGIN PV */
 
@@ -112,6 +126,12 @@ int main(void)
 
   /* Init scheduler */
   osKernelInitialize();
+  /* Create the mutex(es) */
+  /* creation of can2Mutex */
+  can2MutexHandle = osMutexNew(&can2Mutex_attributes);
+
+  /* creation of myMutex02 */
+  myMutex02Handle = osMutexNew(&myMutex02_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */

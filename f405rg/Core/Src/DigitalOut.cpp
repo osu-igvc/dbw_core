@@ -33,6 +33,13 @@ void DigitalOut::reset() {
 	state = 0;
 }
 
+void DigitalOut::toggle() {
+	if(state==1)
+		reset();
+	else
+		set();
+}
+
 bool DigitalOut::getState() {
 	return (state == 1) ? true : false;
 }

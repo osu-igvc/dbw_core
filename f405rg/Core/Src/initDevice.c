@@ -12,7 +12,7 @@ extern CAN_HandleTypeDef hcan2;
 
 void initDevice(void) {
 	MX_GPIO_Init();
-	//CAN2_Init();
+	CAN2_Init();
 	SystemClock_Config();
 
 	//if(HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
@@ -180,6 +180,13 @@ void CAN2_Init(void) {
 
 	HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 5,0U);
 	HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
+
+	if(HAL_CAN_ActivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+		Error_Handler();
+
+	if(HAL_CAN_Start(handle) != HAL_OK)
+		Error_Handler();
+
 }
 
 
