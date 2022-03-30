@@ -5,12 +5,23 @@
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+void CAN2_Init(void);
+
+extern CAN_HandleTypeDef hcan2;
 
 
 void initDevice(void) {
-	SystemClock_Config();
 	MX_GPIO_Init();
+	CAN2_Init();
+	SystemClock_Config();
+
+	//if(HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+	//	Error_Handler();
+
+	//if(HAL_CAN_Start(&hcan2) != HAL_OK)
+	//	Error_Handler();
 }
+
 
 
 /**
@@ -102,7 +113,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+
 
   /*Configure GPIO pin : PD2 */
   GPIO_InitStruct.Pin = GPIO_PIN_2;
@@ -113,7 +125,6 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : LD1_Pin LD2_Pin LD3_Pin */
   GPIO_InitStruct.Pin = LD1_Pin|LD2_Pin|LD3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -130,17 +141,53 @@ static void MX_GPIO_Init(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
   if (htim->Instance == TIM7) {
     HAL_IncTick();
   }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
 }
 
+
+void CAN2_Init(void) {
+	CAN_HandleTypeDef *handle = &hcan2;
+
+	handle->Instance = CAN2;
+	handle->Init.Prescaler = 6;
+	handle->Init.Mode = CAN_MODE_NORMAL;
+	handle->Init.SyncJumpWidth = CAN_SJW_2TQ;
+	handle->Init.TimeSeg1 = CAN_BS1_2TQ;
+	handle->Init.TimeSeg2 = CAN_BS2_2TQ;
+	handle->Init.TimeTriggeredMode = DISABLE;
+	handle->Init.AutoBusOff = DISABLE;
+	handle->Init.AutoWakeUp = DISABLE;
+	handle->Init.AutoRetransmission = ENABLE;
+	handle->Init.ReceiveFifoLocked = DISABLE;
+	handle->Init.TransmitFifoPriority = DISABLE;
+
+	if (HAL_CAN_Init(handle) != HAL_OK)
+		Error_Handler();
+
+	CAN_FilterTypeDef canfilterconfig;
+	canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
+	canfilterconfig.FilterBank 				= 0;
+	canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO0;
+	canfilterconfig.FilterMaskIdHigh 		= 0x0000;
+	canfilterconfig.FilterMaskIdLow 		= 0x0000;
+	canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
+	canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
+
+	if(HAL_CAN_ConfigFilter(handle, &canfilterconfig) != HAL_OK)
+		Error_Handler();
+
+	HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 5,0U);
+	HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
+
+	if(HAL_CAN_ActivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+		Error_Handler();
+
+	if(HAL_CAN_Start(handle) != HAL_OK)
+		Error_Handler();
+
+}
 
 
 /**

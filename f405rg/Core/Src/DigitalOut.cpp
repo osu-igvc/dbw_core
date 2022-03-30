@@ -8,7 +8,6 @@
 #include "DigitalOut.h"
 
 DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) {
-	// TODO Auto-generated constructor stub
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -22,7 +21,6 @@ DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) {
 }
 
 DigitalOut::~DigitalOut() {
-	// TODO Auto-generated destructor stub
 }
 
 void DigitalOut::set() {
@@ -33,6 +31,13 @@ void DigitalOut::set() {
 void DigitalOut::reset() {
 	HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
 	state = 0;
+}
+
+void DigitalOut::toggle() {
+	if(state==1)
+		reset();
+	else
+		set();
 }
 
 bool DigitalOut::getState() {

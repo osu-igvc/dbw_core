@@ -18,16 +18,24 @@
 class Thread {
 protected:
 	bool _kill = false;
-	std::function<void(void*)> fp;
 
-public:
-	const osThreadAttr_t tattrs;
+private:
+	osThreadAttr_t tattrs;
 	osThreadId_t tid;
 
+	std::function<void(void*)> fp;
+
+
+public:
+	Thread();
 	Thread(osThreadFunc_t func, void *args, const char *name, uint32_t stack_size = 512,
 			osPriority_t priority = (osPriority_t)osPriorityNormal);
 	Thread(std::function<void(void*)> func, void *args, const char *name, uint32_t stack_size = 512,
 			osPriority_t priority = (osPriority_t)osPriorityNormal);
+
+	void initThread(std::function<void(void*)> func, void *args, const char *name, uint32_t stack_size, osPriority_t priority);
+
+	void join();
 
 	virtual ~Thread() {};
 	virtual void kill() {_kill = true; };

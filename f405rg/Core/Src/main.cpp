@@ -15,6 +15,7 @@
   *
   ******************************************************************************
   */
+#include <CAN.h>
 #include "main.h"
 
 #include "usb_device.h"
@@ -24,10 +25,11 @@
 #include "dbw_polaris_can/dispatch.h"
 
 #include "DashController.h"
+#include "BrakeController.h"
 #include "Thread.h"
 
-#include "CAN.h"
 #include "DigitalOut.h"
+#include "ParamServer.h"
 #include "PWM.h"
 
 #include <functional>
@@ -60,27 +62,34 @@ int main(void)
   initDevice();
   MX_USB_DEVICE_Init();
 
+
+
   osKernelInitialize();
 
 
-  BoardType boardType = BoardType::DASH_BOARD;
+  BoardType boardType = BoardType::BRAKE_BOARD;
 
   Thread *applicationThread;
 
-  switch(boardType) {
-  case BRAKE_BOARD:
-
-	  break;
-  case DASH_BOARD:
-	  applicationThread = new DashController("DashController", 500);
-	  break;
-  case LOW_LEVEL_CONTROLLER:
-
-	  break;
-  case DUAL_CAN:
-
-	  break;
+  if(boardType == BRAKE_BOARD) {
+	  DigitalOut *led1 = new DigitalOut(LD1_GPIO_Port, LD1_Pin);
+	  DigitalOut *led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
+	  DigitalOut *led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
+	  CAN *can2 = new CAN(CAN2, 2);
+	  applicationThread = new BrakeController("BrakeController", 200, led1, led2, led3, can2, 1024);
   }
+  else if(boardType == DASH_BOARD) {
+	  PWM 		 *led1 = new PWM(TIM3, TIM_CHANNEL_1);
+	  DigitalOut *led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
+	  DigitalOut *led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
+	  CAN 		 *can2 = new CAN(CAN2, 2);
+
+	  applicationThread = new DashController("DashController", 100, led1, led2, led3, can2, 1024);
+  }
+  else if(boardType == LOW_LEVEL_CONTROLLER) {}
+  else if(boardType == DUAL_CAN) {}
+  else
+	  Error_Handler();
 
   osKernelStart();
   Error_Handler();	// Should never get to this line
