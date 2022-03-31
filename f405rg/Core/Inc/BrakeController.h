@@ -13,6 +13,7 @@
 
 #include "PWM.h"
 #include "DigitalOut.h"
+#include "DigitalIn.h"
 
 class BrakeController: public Thread {
 public:
@@ -26,10 +27,13 @@ private:
 	void thread2(void *argument);
 
 	void canLed2Cb(CanMsg &msg);
+	void digitalInCb1(uint8_t value);
+	void digitalInCb2(uint8_t value);
 
 	int period_ms;
 
 	DigitalOut *led1, *led2, *led3;
+	DigitalIn *dIn1, *dIn2;
 	CAN *can2;
 };
 

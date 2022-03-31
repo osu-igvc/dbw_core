@@ -12,8 +12,9 @@
 #include "stm32f4xx_hal.h"
 
 #include <map>
+#include <functional>
 
-typedef void (*digitalInIQRCb)(uint8_t pinValue);
+typedef std::function<void(uint8_t)> digitalInIrqCb;
 
 typedef enum {
 	RISE,
@@ -23,7 +24,7 @@ typedef enum {
 
 class DigitalIn {
 public:
-	DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIQRCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
+	DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIrqCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	virtual ~DigitalIn();
 
@@ -40,7 +41,7 @@ public:
 
 
 private:
-	digitalInIQRCb cb;
+	digitalInIrqCb cb;
 
 	GPIO_TypeDef *port;
 	uint16_t pin;

@@ -23,7 +23,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 
 
-DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIQRCb cb, uint32_t pullMode, uint32_t speed) {
+DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIrqCb cb, uint32_t pullMode, uint32_t speed) {
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = pin;
@@ -86,7 +86,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMo
 			break;
 	}
 
-	HAL_NVIC_SetPriority(irqType, 5, 0);
+	HAL_NVIC_SetPriority(irqType, 5U, 0U);
 	HAL_NVIC_EnableIRQ(irqType);
 
 	this->port = port;

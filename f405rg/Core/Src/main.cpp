@@ -72,7 +72,7 @@ int main(void)
   Thread *applicationThread;
 
   if(boardType == BRAKE_BOARD) {
-	  applicationThread = new BrakeController("BrakeController", 200, 1024);//, led1, led2, led3, can2, 1024);
+	  applicationThread = new BrakeController("BrakeController", 200, 1024);
   }
   else if(boardType == DASH_BOARD) {
 	  PWM 		 *led1 = new PWM(TIM3, TIM_CHANNEL_1);
