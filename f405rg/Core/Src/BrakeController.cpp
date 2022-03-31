@@ -13,14 +13,13 @@
 using namespace std::placeholders;
 
 
-BrakeController::BrakeController(const char *name, int period_ms, DigitalOut *led1, DigitalOut *led2,
-		DigitalOut *led3, CAN *can2, uint32_t stack_size) :
+BrakeController::BrakeController(const char *name, int period_ms, uint32_t stack_size) :
 Thread(std::bind(&BrakeController::run, this, _1), NULL, name, stack_size) {
 	this->period_ms = period_ms;
-	this->led1 = led1;
-	this->led2 = led2;
-	this->led3 = led3;
-	this->can2 = can2;
+	led1 = new DigitalOut(LD1_GPIO_Port, LD1_Pin);
+	led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
+	led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
+	can2 = new CAN(CAN2, 2);
 }
 
 BrakeController::~BrakeController() {

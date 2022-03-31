@@ -6,6 +6,7 @@
  */
 
 #include "DigitalOut.h"
+#include "main.h"
 
 DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -14,6 +15,12 @@ DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) {
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(port, &GPIO_InitStruct);
+
+	/* Definitions for can2Mutex */
+
+	mutex = osSemaphoreNew(1,1,NULL);
+	if(mutex == NULL)
+		Error_Handler();
 
 	this->port = port;
 	this->pin = pin;
@@ -66,3 +73,10 @@ bool DigitalOut::operator == (const bool &state) {
 	return getState() == state;
 }
 
+void DigitalOut::lock() {
+	osSemaphoreAcquire(mutex, osWaitForever);
+}
+
+void DigitalOut::unlock() {
+	osSemaphoreAcquire(mutex, osWaitForever);
+}

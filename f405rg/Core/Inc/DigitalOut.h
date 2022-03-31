@@ -27,9 +27,14 @@ public:
 	bool operator == (const bool &state);
 
 private:
+	void lock();
+	void unlock();
+
 	GPIO_TypeDef* port;
 	uint16_t pin;
 	uint8_t state;
+
+	osSemaphoreId_t mutex;
 };
 
 

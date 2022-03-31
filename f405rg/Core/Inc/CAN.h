@@ -66,8 +66,8 @@ public:
 
 	void fillHeader(uint32_t id);
 	uint64_t getDatum(uint8_t data[8]);
-	void setData(uint64_t datum);
 
+	void setData(uint64_t datum);
 	virtual void fillMsg(uint8_t data[8]) = 0;
 
 	uint8_t priority   :3;
@@ -83,8 +83,10 @@ public:
 	FB3TorqueMsg();
 	FB3TorqueMsg(uint8_t data[8]);
 	FB3TorqueMsg(CanMsg &msg);
+	FB3TorqueMsg(uint32_t inputTorque, uint32_t cmdTorque);
 
 	void fillMsg(uint8_t data[8]);
+	uint8_t* toArray(uint32_t inputTorque, uint32_t cmdTorque);
 
 	uint32_t inputTorque :32;
 	uint32_t cmdTorque   :32;
@@ -95,8 +97,10 @@ public:
 	FB7PosVelMsg();
 	FB7PosVelMsg(uint8_t data[8]);
 	FB7PosVelMsg(CanMsg &msg);
+	FB7PosVelMsg(uint32_t inputTorque, uint32_t cmdTorque);
 
 	void fillMsg(uint8_t data[8]);
+	uint8_t* toArray(uint32_t position, uint32_t velocity);
 
 	uint32_t position :32;
 	uint32_t velocity :32;
@@ -107,11 +111,13 @@ public:
 	FB9StateMsg();
 	FB9StateMsg(uint8_t data[8]);
 	FB9StateMsg(CanMsg &msg);
+	FB9StateMsg(uint8_t mode, uint8_t msgCount);
 
 	void fillMsg(uint8_t data[8]);
+	uint8_t* toArray(uint8_t mode, uint8_t msgCount);
 
-	uint64_t mode 	  :8;
-	uint64_t msgCount :8;
+	uint8_t mode 	  :8;
+	uint8_t msgCount  :8;
 	uint64_t 		  :48;
 };
 

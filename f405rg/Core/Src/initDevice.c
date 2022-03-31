@@ -14,12 +14,6 @@ void initDevice(void) {
 	MX_GPIO_Init();
 	CAN2_Init();
 	SystemClock_Config();
-
-	//if(HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-	//	Error_Handler();
-
-	//if(HAL_CAN_Start(&hcan2) != HAL_OK)
-	//	Error_Handler();
 }
 
 
@@ -93,9 +87,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD2_Pin|LD3_Pin, GPIO_PIN_RESET);
-
   /*Configure GPIO pins : PA4 PA5 PA6 PA7 */
   GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -122,13 +113,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LD1_Pin LD2_Pin LD3_Pin */
-  GPIO_InitStruct.Pin = LD1_Pin|LD2_Pin|LD3_Pin;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /**
@@ -177,16 +161,6 @@ void CAN2_Init(void) {
 
 	if(HAL_CAN_ConfigFilter(handle, &canfilterconfig) != HAL_OK)
 		Error_Handler();
-
-	HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 5,0U);
-	HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
-
-	if(HAL_CAN_ActivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-		Error_Handler();
-
-	if(HAL_CAN_Start(handle) != HAL_OK)
-		Error_Handler();
-
 }
 
 

@@ -23,7 +23,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 
 
-DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, DigitalIn interruptMode, digitalInIQRCb cb, uint32_t pullMode, uint32_t speed) {
+DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIQRCb cb, uint32_t pullMode, uint32_t speed) {
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = pin;
@@ -33,7 +33,7 @@ DigitalIn::DigitalIn(GPIO_TypeDef* port, uint16_t pin, DigitalIn interruptMode, 
 
 	uint32_t mode;
 	switch(interruptMode) {
-	case RISING:
+	case RISE:
 		mode = GPIO_MODE_IT_RISING;
 		break;
 	case FALL:

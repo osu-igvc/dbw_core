@@ -54,7 +54,7 @@ using namespace dbw_polaris_can;
 
 /**
   * @brief  The application entry point.
-  * @retval int
+  * @retval intd
   */
 int main(void)
 {
@@ -72,11 +72,7 @@ int main(void)
   Thread *applicationThread;
 
   if(boardType == BRAKE_BOARD) {
-	  DigitalOut *led1 = new DigitalOut(LD1_GPIO_Port, LD1_Pin);
-	  DigitalOut *led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
-	  DigitalOut *led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
-	  CAN *can2 = new CAN(CAN2, 2);
-	  applicationThread = new BrakeController("BrakeController", 200, led1, led2, led3, can2, 1024);
+	  applicationThread = new BrakeController("BrakeController", 200, 1024);//, led1, led2, led3, can2, 1024);
   }
   else if(boardType == DASH_BOARD) {
 	  PWM 		 *led1 = new PWM(TIM3, TIM_CHANNEL_1);

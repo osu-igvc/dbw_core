@@ -14,7 +14,9 @@ using namespace std::placeholders;
 
 #define MSG_IN_QUEUE 	 0x01U
 
+extern "C" {
 CAN_HandleTypeDef hcan1, hcan2;
+}
 
 namespace {
 std::map<CAN_HandleTypeDef*, CAN*> objectMap = std::map<CAN_HandleTypeDef*, CAN*>();
@@ -82,7 +84,9 @@ CanMsg::CanMsg(uint32_t id, uint32_t ide, uint8_t data[8]) {
 	this->txHeader.RTR 	= CAN_RTR_DATA;
 	this->txHeader.TransmitGlobalTime = DISABLE;
 	this->txHeader.DLC = 8;
-	memcpy(this->data, data, sizeof(this->data));
+
+	if(data != NULL)
+		memcpy(this->data, data, sizeof(this->data));
 
 	switch(ide) {
 	case CAN_ID_STD:
@@ -135,10 +139,9 @@ uint64_t J1939Msg::getDatum(uint8_t data[8]) {
 	return datum;
 }
 
+
 void J1939Msg::setData(uint64_t datum) {
-	for(int i=0; i<8; ++i) {
-		data[i] = datum >> 8*i;
-	}
+	memcpy(data, &datum, 8*sizeof(uint8_t));
 }
 
 
@@ -158,11 +161,23 @@ FB3TorqueMsg::FB3TorqueMsg(CanMsg &msg) : J1939Msg(msg) {
 	fillMsg(msg.data);
 }
 
+FB3TorqueMsg::FB3TorqueMsg(uint32_t inputTorque, uint32_t cmdTorque) : J1939Msg(ID_FB3TORQUE, toArray(inputTorque, cmdTorque)) {
+	this->inputTorque = inputTorque;
+	this->cmdTorque = cmdTorque;
+	toArray(inputTorque, cmdTorque);
+}
+
 void FB3TorqueMsg::fillMsg(uint8_t data[8]) {
 	uint64_t datum = getDatum(data);
 
 	inputTorque = datum >> 32;
 	cmdTorque   = datum;
+}
+
+uint8_t* FB3TorqueMsg::toArray(uint32_t inputTorque, uint32_t cmdTorque) {
+	uint64_t datum = ((uint64_t)inputTorque << 32) | cmdTorque;
+	setData(datum);
+	return data;
 }
 
 
@@ -182,11 +197,22 @@ FB7PosVelMsg::FB7PosVelMsg(CanMsg &msg) : J1939Msg(msg) {
 	fillMsg(msg.data);
 }
 
+FB7PosVelMsg::FB7PosVelMsg(uint32_t position, uint32_t velocity) : J1939Msg(ID_FB7POSVEL, toArray(position, velocity)) {
+	this->position = position;
+	this->velocity = velocity;
+}
+
 void FB7PosVelMsg::fillMsg(uint8_t data[8]) {
 	uint64_t datum = getDatum(data);
 
 	position = datum >> 32;
 	velocity = datum;
+}
+
+uint8_t* FB7PosVelMsg::toArray(uint32_t position, uint32_t velocity) {
+	uint64_t datum = ((uint64_t)position << 32) | velocity;
+	setData(datum);
+	return data;
 }
 
 
@@ -247,34 +273,6 @@ void CAN::init(CAN_TypeDef *base, uint16_t queueSize) {
 	if(objectMap.insert(std::pair<CAN_HandleTypeDef*, CAN*>(handle, this)).second == false)
 		Error_Handler();
 
-	/*
-	handle->Instance = base;
-	handle->Init.Prescaler = 6;
-	handle->Init.Mode = CAN_MODE_NORMAL;
-	handle->Init.SyncJumpWidth = CAN_SJW_2TQ;
-	handle->Init.TimeSeg1 = CAN_BS1_2TQ;
-	handle->Init.TimeSeg2 = CAN_BS2_2TQ;
-	handle->Init.TimeTriggeredMode = DISABLE;
-	handle->Init.AutoBusOff = DISABLE;
-	handle->Init.AutoWakeUp = DISABLE;
-	handle->Init.AutoRetransmission = ENABLE;
-	handle->Init.ReceiveFifoLocked = DISABLE;
-	handle->Init.TransmitFifoPriority = DISABLE;
-
-	if (HAL_CAN_Init(handle) != HAL_OK)
-		Error_Handler();
-
-	CAN_FilterTypeDef canfilterconfig;
-	canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
-	canfilterconfig.FilterBank 				= 0;
-	canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO0;
-	canfilterconfig.FilterMaskIdHigh 		= 0x0000;
-	canfilterconfig.FilterMaskIdLow 		= 0x0000;
-	canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
-	canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
-
-	if(HAL_CAN_ConfigFilter(handle, &canfilterconfig) != HAL_OK)
-		Error_Handler();
 
 	if(base == CAN1) {
 		HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 5, 0U);
@@ -289,23 +287,10 @@ void CAN::init(CAN_TypeDef *base, uint16_t queueSize) {
 		Error_Handler();
 
 	if(HAL_CAN_Start(handle) != HAL_OK)
-		Error_Handler();/
-	*/
-
-	const char *mutexName = (base == CAN1) ? "CAN1Mutex" : "CAN2Mutex";
+		Error_Handler();
 
 
 	/* Definitions for can2Mutex */
-
-	StaticSemaphore_t can2MutexControlBlock;
-	const osMutexAttr_t can2Mutex_attributes = {
-	  .name = mutexName,
-	  .cb_mem = &can2MutexControlBlock,
-	  .cb_size = sizeof(can2MutexControlBlock),
-	};
-	mutex = osMutexNew(&can2Mutex_attributes);
-	if(mutex == NULL)
-		Error_Handler();
 
 
 	mutex = osSemaphoreNew(1,1,NULL);
