@@ -14,6 +14,7 @@
 #include "PWM.h"
 #include "DigitalOut.h"
 #include "DigitalIn.h"
+#include "Timer.h"
 
 class BrakeController: public Thread {
 public:
@@ -35,6 +36,8 @@ private:
 	DigitalOut *led1, *led2, *led3;
 	DigitalIn *dIn1, *dIn2;
 	CAN *can2;
+
+	Timer tim1, tim2;
 };
 
 #endif /* SRC_BRAKECONTROLLER_H_ */

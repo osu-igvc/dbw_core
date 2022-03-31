@@ -23,6 +23,9 @@ Thread(std::bind(&BrakeController::run, this, _1), NULL, name, stack_size) {
 
 	dIn1 = new DigitalIn(GPIOC, GPIO_PIN_5, RISE, std::bind(&BrakeController::digitalInCb1, this, _1), GPIO_PULLDOWN);
 	dIn2 = new DigitalIn(GPIOC, GPIO_PIN_4, RISE, std::bind(&BrakeController::digitalInCb2, this, _1), GPIO_PULLDOWN);
+
+	tim1.start();
+	tim2.start();
 }
 
 BrakeController::~BrakeController() {
@@ -74,13 +77,18 @@ void BrakeController::canLed2Cb(CanMsg &msg) {
 }
 
 void BrakeController::digitalInCb1(uint8_t value) {
-	if(dIn1->read() == 1)
-		led3->set();
+	if(dIn1->read() != 1) return;
 
+	uint32_t time = tim1.getElapsedTime();
+	led3->set();
+	tim1.restart();
 	//uint8_t pinVal = dIn2->read();
 }
 
 void BrakeController::digitalInCb2(uint8_t value) {
-	if(dIn2->read() == 1)
-		led3->reset();
+	if(dIn2->read() != 0) return;
+
+	uint32_t time = tim2.getElapsedTime();
+	led3->reset();
+	tim2.restart();
 }
