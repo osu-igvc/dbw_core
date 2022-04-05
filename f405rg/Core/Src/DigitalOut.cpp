@@ -8,7 +8,7 @@
 #include "DigitalOut.h"
 #include "main.h"
 
-DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) {
+DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) : ThreadSafe() {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;

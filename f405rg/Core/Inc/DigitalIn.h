@@ -14,6 +14,9 @@
 #include <map>
 #include <functional>
 
+#include "ThreadSafe.h"
+
+
 typedef std::function<void(uint8_t)> digitalInIrqCb;
 
 typedef enum {
@@ -22,7 +25,7 @@ typedef enum {
 	CHANGE
 } InterruptMode;
 
-class DigitalIn {
+class DigitalIn : ThreadSafe {
 public:
 	DigitalIn(GPIO_TypeDef* port, uint16_t pin, InterruptMode interruptMode, digitalInIrqCb cb, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);
 	DigitalIn(GPIO_TypeDef* port, uint16_t pin, uint32_t pullMode = GPIO_NOPULL, uint32_t speed = GPIO_SPEED_FREQ_LOW);

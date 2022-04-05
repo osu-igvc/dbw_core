@@ -11,7 +11,10 @@
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
-class DigitalOut {
+#include "ThreadSafe.h"
+
+
+class DigitalOut : ThreadSafe {
 public:
 	DigitalOut(GPIO_TypeDef* port, uint16_t pin);
 	virtual ~DigitalOut();

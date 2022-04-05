@@ -10,8 +10,11 @@
 
 #include "stm32f4xx_hal.h"
 
+#include "ThreadSafe.h"
 
-class PWM {
+
+
+class PWM : ThreadSafe {
 public:
 	PWM(TIM_TypeDef* instance, uint32_t channel, uint16_t freq = 20000);
 	PWM(TIM_TypeDef* instance, uint32_t channel, uint16_t freq, float dutyCycle);

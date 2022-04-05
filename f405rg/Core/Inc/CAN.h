@@ -18,6 +18,7 @@
 
 #include "main.h"
 #include "Thread.h"
+#include "ThreadSafe.h"
 
 
 
@@ -125,7 +126,7 @@ public:
 typedef std::function<void(CanMsg&)> CANIrqCb;
 typedef std::function<void(CanMsg*)> CANIrqGlobalCb;
 
-class CAN {
+class CAN : ThreadSafe {
 public:
 	/**
 	 * @brief	Initialize a CAN instance
@@ -180,9 +181,6 @@ public:
 
 private:
 	void init(CAN_TypeDef* base, uint16_t queueSize);
-	void lock();
-	void unlock();
-
 	CAN_HandleTypeDef *handle;
 
 	CAN_TxHeaderTypeDef txHeader;

@@ -248,7 +248,7 @@ void FB9StateMsg::fillMsg(uint8_t data[8]) {
 //
 
 
-CAN::CAN(CAN_TypeDef *base, uint16_t queueSize) {
+CAN::CAN(CAN_TypeDef *base, uint16_t queueSize) : ThreadSafe() {
 	init(base, queueSize);
 	this->cb = NULL;
 }
@@ -366,12 +366,4 @@ void CAN::__fifo0MsgPendingIrq(CanMsg &msg) {
 
 	queue.push(msg);
 	if(queue.size() > queueSize) queue.pop();
-}
-
-void CAN::lock() {
-	osSemaphoreAcquire(mutex, osWaitForever);
-}
-
-void CAN::unlock() {
-	osSemaphoreRelease(mutex);
 }

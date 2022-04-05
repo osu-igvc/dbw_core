@@ -11,11 +11,11 @@
 TIM_HandleTypeDef htim1, htim2, htim3, htim4, htim5;
 TIM_HandleTypeDef htim8, htim9, htim10, htim11, htim12, htim13, htim14;
 
-PWM::PWM(TIM_TypeDef* instance, uint32_t channel, uint16_t freq) {
+PWM::PWM(TIM_TypeDef* instance, uint32_t channel, uint16_t freq) : ThreadSafe() {
 	init(instance, channel, freq);
 }
 
-PWM::PWM(TIM_TypeDef* instance, uint32_t channel, uint16_t freq, float dutyCycle) {
+PWM::PWM(TIM_TypeDef* instance, uint32_t channel, uint16_t freq, float dutyCycle) : ThreadSafe() {
 	init(instance, channel, freq);
 	set(freq, dutyCycle);
 }
