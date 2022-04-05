@@ -12,14 +12,25 @@
 
 using namespace std::placeholders;
 
-DashController::DashController(const char *name, int period_ms, PWM *led1,
-		DigitalOut *led2, DigitalOut *led3, CAN *can2, uint32_t stack_size) :
+DashController::DashController(const char *name, int period_ms, uint32_t stack_size) :
 Thread(std::bind(&DashController::run, this, _1), NULL, name, stack_size) {
 	this->period_ms = period_ms;
-	this->led1 = led1;
-	this->led2 = led2;
-	this->led3 = led3;
-	this->can2 = can2;
+
+	this->led1 = new DigitalOut(GPIOB, GPIO_Pin_6);
+	this->led2 = new DigitalOut(GPIOB, GPIO_Pin_5);
+	this->led3 = new DigitalOut(GPIOB, GPIO_Pin_4);
+
+	this->fnrState0 = new DigitalOut(GPIOB, GPIO_Pin_0);
+	this->fnrState1 = new DigitalOut(GPIOB, GPIO_Pin_1);
+	this->relayEnable = new DigitalOut(GPIOC, GPIO_Pin_4);
+	this->parkingBrake = new DigitalOut(GPIOA, GPIO_Pin_6);
+
+	this->accel1 = new AnalogOut(GPIOA, GPIO_Pin_4);
+	this->accel2 = new AnalogOut(GPIOA, GPIO_Pin_5);
+
+	this->can1 = new CAN(CAN1, 2);
+	this->can2 = new CAN(CAN2, 2);
+
 }
 
 DashController::~DashController() {
@@ -38,7 +49,7 @@ void DashController::run(void *argument) {
 	  {
 		can2->send(msg);
 
-		led1->set((incr++ % 11)/10.0);
+		//led1->set((incr++ % 11)/10.0);
 
 		led3->toggle();
 		osDelay(period_ms);

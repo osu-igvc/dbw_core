@@ -14,10 +14,12 @@
 
 #include "DigitalOut.h"
 #include "PWM.h"
+#include "AnalogOut.h"
+
 
 class DashController : public Thread {
 public:
-	DashController(const char *name, int period_ms, PWM *led1, DigitalOut *led2, DigitalOut *led3, CAN *can2, uint32_t stack_size = 512);
+	DashController(const char *name, int period_ms, uint32_t stack_size = 512);
 	virtual ~DashController();
 
 	void run(void *argument);
@@ -26,9 +28,16 @@ public:
 private:
 	int period_ms;
 
-	PWM *led1;
-	DigitalOut *led2, *led3;
-	CAN *can2;
+	DigitalOut *led1, *led2, *led3;
+	DigitalOut *fnrState0, *fnrState1, *relayEnable;
+	DigitalOut *parkingBrake;
+
+	DigitalIn *polarisR, *polarisN, *polarisF;
+	DigitalIn *eStop;
+
+	AnalogOut *accel1, *accel2;
+
+	CAN *can1, *can2;
 };
 
 #endif /* INC_DASHCONTROLLER_H_ */
