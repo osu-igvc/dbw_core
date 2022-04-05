@@ -67,7 +67,7 @@ int main(void)
   osKernelInitialize();
 
 
-  BoardType boardType = BoardType::BRAKE_BOARD;
+  BoardType boardType = BoardType::DASH_BOARD;
 
   Thread *applicationThread;
 
@@ -75,12 +75,7 @@ int main(void)
 	  applicationThread = new BrakeController("BrakeController", 200, 1024);
   }
   else if(boardType == DASH_BOARD) {
-	  PWM 		 *led1 = new PWM(TIM3, TIM_CHANNEL_1);
-	  DigitalOut *led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
-	  DigitalOut *led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
-	  CAN 		 *can2 = new CAN(CAN2, 2);
-
-	  applicationThread = new DashController("DashController", 100, led1, led2, led3, can2, 1024);
+	 applicationThread = new DashController("DashController", 100, 1024);
   }
   else if(boardType == LOW_LEVEL_CONTROLLER) {}
   else if(boardType == DUAL_CAN) {}
