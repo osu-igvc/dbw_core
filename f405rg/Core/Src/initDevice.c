@@ -5,13 +5,16 @@
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+void CAN1_Init(void);
 void CAN2_Init(void);
 
+extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 
 
 void initDevice(void) {
 	MX_GPIO_Init();
+	CAN1_Init();
 	CAN2_Init();
 	SystemClock_Config();
 }
@@ -31,6 +34,7 @@ void SystemClock_Config(void)
 	  */
 	  __HAL_RCC_PWR_CLK_ENABLE();
 	  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
 	  /** Initializes the RCC Oscillators according to the specified parameters
 	  * in the RCC_OscInitTypeDef structure.
 	  */
@@ -40,14 +44,15 @@ void SystemClock_Config(void)
 	  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
 	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	  RCC_OscInitStruct.PLL.PLLM = 12;
-	  RCC_OscInitStruct.PLL.PLLN = 72;
+	  RCC_OscInitStruct.PLL.PLLM = 15;
+	  RCC_OscInitStruct.PLL.PLLN = 144;
 	  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-	  RCC_OscInitStruct.PLL.PLLQ = 3;
+	  RCC_OscInitStruct.PLL.PLLQ = 5;
 	  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
 	  {
 	    Error_Handler();
 	  }
+
 	  /** Initializes the CPU, AHB and APB buses clocks
 	  */
 	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -154,6 +159,38 @@ void CAN2_Init(void) {
 	canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
 	canfilterconfig.FilterBank 				= 0;
 	canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO0;
+	canfilterconfig.FilterMaskIdHigh 		= 0x0000;
+	canfilterconfig.FilterMaskIdLow 		= 0x0000;
+	canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
+	canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
+
+	if(HAL_CAN_ConfigFilter(handle, &canfilterconfig) != HAL_OK)
+		Error_Handler();
+}
+
+void CAN1_Init(void) {
+	CAN_HandleTypeDef *handle = &hcan1;
+
+	handle->Instance = CAN1;
+	handle->Init.Prescaler = 16;
+	handle->Init.Mode = CAN_MODE_NORMAL;
+	handle->Init.SyncJumpWidth = CAN_SJW_1TQ;
+	handle->Init.TimeSeg1 = CAN_BS1_1TQ;
+	handle->Init.TimeSeg2 = CAN_BS2_1TQ;
+	handle->Init.TimeTriggeredMode = DISABLE;
+	handle->Init.AutoBusOff = DISABLE;
+	handle->Init.AutoWakeUp = DISABLE;
+	handle->Init.AutoRetransmission = ENABLE;
+	handle->Init.ReceiveFifoLocked = DISABLE;
+	handle->Init.TransmitFifoPriority = DISABLE;
+
+	if (HAL_CAN_Init(handle) != HAL_OK)
+		Error_Handler();
+
+	CAN_FilterTypeDef canfilterconfig;
+	canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
+	canfilterconfig.FilterBank 				= 0;
+	canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO1;
 	canfilterconfig.FilterMaskIdHigh 		= 0x0000;
 	canfilterconfig.FilterMaskIdLow 		= 0x0000;
 	canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;

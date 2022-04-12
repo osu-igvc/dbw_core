@@ -12,9 +12,16 @@
 #include "stm32f4xx_hal.h"
 #include <Thread.h>
 
+#include "DigitalIn.h"
 #include "DigitalOut.h"
 #include "PWM.h"
 #include "AnalogOut.h"
+
+typedef enum {
+	FORWARD,
+	REVERSE,
+	NEUTRAL
+} Gear;
 
 
 class DashController : public Thread {
@@ -27,6 +34,10 @@ public:
 
 private:
 	int period_ms;
+
+	float linearTransform(float x, float x1, float y1, float x2, float y2);
+	void setThrottle(float mph);
+	void setGear(Gear gear);
 
 	DigitalOut *led1, *led2, *led3;
 	DigitalOut *fnrState0, *fnrState1, *relayEnable;

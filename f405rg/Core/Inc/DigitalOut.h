@@ -16,7 +16,7 @@
 
 class DigitalOut : ThreadSafe {
 public:
-	DigitalOut(GPIO_TypeDef* port, uint16_t pin);
+	DigitalOut(GPIO_TypeDef* port, uint16_t pin, uint32_t pull = GPIO_NOPULL);
 	virtual ~DigitalOut();
 
 	bool getState();

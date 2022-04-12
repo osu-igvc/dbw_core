@@ -16,19 +16,25 @@ DashController::DashController(const char *name, int period_ms, uint32_t stack_s
 Thread(std::bind(&DashController::run, this, _1), NULL, name, stack_size) {
 	this->period_ms = period_ms;
 
-	this->led1 = new DigitalOut(GPIOB, GPIO_Pin_6);
-	this->led2 = new DigitalOut(GPIOB, GPIO_Pin_5);
-	this->led3 = new DigitalOut(GPIOB, GPIO_Pin_4);
+	this->led1 = new DigitalOut(GPIOB, GPIO_PIN_6);
+	this->led2 = new DigitalOut(GPIOB, GPIO_PIN_5);
+	this->led3 = new DigitalOut(GPIOB, GPIO_PIN_4);
 
-	this->fnrState0 = new DigitalOut(GPIOB, GPIO_Pin_0);
-	this->fnrState1 = new DigitalOut(GPIOB, GPIO_Pin_1);
-	this->relayEnable = new DigitalOut(GPIOC, GPIO_Pin_4);
-	this->parkingBrake = new DigitalOut(GPIOA, GPIO_Pin_6);
+	this->fnrState0 = new DigitalOut(GPIOB, GPIO_PIN_0);
+	this->fnrState1 = new DigitalOut(GPIOB, GPIO_PIN_1);
+	this->relayEnable = new DigitalOut(GPIOC, GPIO_PIN_4);
+	this->parkingBrake = new DigitalOut(GPIOA, GPIO_PIN_6);
 
-	this->accel1 = new AnalogOut(GPIOA, GPIO_Pin_4);
-	this->accel2 = new AnalogOut(GPIOA, GPIO_Pin_5);
+	this->polarisR = new DigitalIn(GPIOC, GPIO_PIN_6);
+	this->polarisN = new DigitalIn(GPIOB, GPIO_PIN_14);
+	this->polarisF = new DigitalIn(GPIOB, GPIO_PIN_15);
 
-	this->can1 = new CAN(CAN1, 2);
+	this->eStop = new DigitalIn(GPIOC, GPIO_PIN_8);
+
+	this->accel1 = new AnalogOut(PA4);
+	this->accel2 = new AnalogOut(PA5);
+
+	//this->can1 = new CAN(CAN1, 2);
 	this->can2 = new CAN(CAN2, 2);
 
 }
@@ -45,11 +51,24 @@ void DashController::run(void *argument) {
 
 	  int incr = 0;
 
+	  relayEnable->set();
+
 	  while (1)
 	  {
 		can2->send(msg);
 
+		setThrottle(0.0);
+		setGear(REVERSE);
 		//led1->set((incr++ % 11)/10.0);
+
+		if(polarisR->read() == 1)
+			bool test = false;
+
+		if(polarisN->read() == 1)
+			bool test = false;
+
+		if(polarisF->read() == 1)
+			bool test = false;
 
 		led3->toggle();
 		osDelay(period_ms);
@@ -71,3 +90,37 @@ void DashController::canLed2Cb(CanMsg &msg) {
 		break;
 	}
 }
+
+
+void DashController::setThrottle(float mph) {
+	float s1 = linearTransform(mph, 0, 1.082/2, 25, 4.14/2);
+	float s2 = linearTransform(mph, 0, 0.538/2, 25, 2.089/2);
+	accel1->write(s1);
+	accel2->write(s2);
+}
+
+void DashController::setGear(Gear gear) {
+	switch(gear) {
+	case FORWARD:
+		fnrState0->reset();
+		fnrState1->reset();
+		break;
+	case NEUTRAL:
+		fnrState0->set();
+		fnrState1->set();
+		break;
+	case REVERSE:
+		fnrState0->reset();
+		fnrState1->set();
+		break;
+	default:
+		Error_Handler();
+		break;
+	}
+}
+
+float DashController::linearTransform(float x, float x1, float y1, float x2, float y2) {
+	float m = (y2-y1)/(x2-x1);
+	return m*(x-x1) + y1;
+}
+

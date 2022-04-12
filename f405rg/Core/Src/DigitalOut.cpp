@@ -8,11 +8,11 @@
 #include "DigitalOut.h"
 #include "main.h"
 
-DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin) : ThreadSafe() {
+DigitalOut::DigitalOut(GPIO_TypeDef* port, uint16_t pin, uint32_t pull) : ThreadSafe() {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	GPIO_InitStruct.Pin = pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Pull = pull;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(port, &GPIO_InitStruct);
 
