@@ -28,13 +28,14 @@ private:
 	void thread2(void *argument);
 
 	void canLed2Cb(CanMsg &msg);
-	void digitalInCb1(uint8_t value);
 	void digitalInCb2(uint8_t value);
 
 	int period_ms;
 
+	PWM *brake, *eBrake;
+
 	DigitalOut *led1, *led2, *led3;
-	DigitalIn *dIn1, *dIn2;
+	DigitalIn *dIn2;
 	CAN *can2;
 
 	Timer tim1, tim2;

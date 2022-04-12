@@ -39,12 +39,18 @@ private:
 	void setThrottle(float mph);
 	void setGear(Gear gear);
 
+	volatile bool throttleButtonRise;
+	bool inAccelerationProgram;
+
+	void throttleButtonCb(uint8_t value);
+
 	DigitalOut *led1, *led2, *led3;
 	DigitalOut *fnrState0, *fnrState1, *relayEnable;
 	DigitalOut *parkingBrake;
 
 	DigitalIn *polarisR, *polarisN, *polarisF;
 	DigitalIn *eStop;
+	DigitalIn *throttleButton;
 
 	AnalogOut *accel1, *accel2;
 

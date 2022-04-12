@@ -10,18 +10,22 @@
 #include <functional>
 #include "main.h"
 
+
 using namespace std::placeholders;
 
 
 BrakeController::BrakeController(const char *name, int period_ms, uint32_t stack_size) :
 Thread(std::bind(&BrakeController::run, this, _1), NULL, name, stack_size) {
 	this->period_ms = period_ms;
+
+	//brake  = new PWM(TIM5, 2);
+	//eBrake = new PWM(TIM9, 1);
+
 	led1 = new DigitalOut(LD1_GPIO_Port, LD1_Pin);
 	led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
 	led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
 	can2 = new CAN(CAN2, 2);
 
-	dIn1 = new DigitalIn(GPIOC, GPIO_PIN_5, RISE, std::bind(&BrakeController::digitalInCb1, this, _1), GPIO_PULLDOWN);
 	dIn2 = new DigitalIn(GPIOC, GPIO_PIN_4, RISE, std::bind(&BrakeController::digitalInCb2, this, _1), GPIO_PULLDOWN);
 
 	tim1.start();
@@ -39,6 +43,18 @@ void BrakeController::run(void *argument) {
 	//Thread *t2 = new Thread(std::bind(&BrakeController::thread2, this, _1), NULL, "thread2", 512, osPriorityHigh);
 	//t1->join();
 	//t2->join();
+
+	//brake->set(0.5);
+	//eBrake->set(0.5);
+
+
+	// If brakeButtonRise
+	// 	Accelerate to 15 mph over 5 seconds
+	// 	Hold for 5 seconds
+	//	Decelerate over 1 second
+
+
+	float mph = 0;
 
 	uint8_t data[8] = {ASSIST, 12, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 	FB9StateMsg msg(data);
@@ -76,14 +92,6 @@ void BrakeController::canLed2Cb(CanMsg &msg) {
 		led2->toggle();
 }
 
-void BrakeController::digitalInCb1(uint8_t value) {
-	if(dIn1->read() != 1) return;
-
-	uint32_t time = tim1.getElapsedTime();
-	led3->set();
-	tim1.restart();
-	//uint8_t pinVal = dIn2->read();
-}
 
 void BrakeController::digitalInCb2(uint8_t value) {
 	if(dIn2->read() != 0) return;
