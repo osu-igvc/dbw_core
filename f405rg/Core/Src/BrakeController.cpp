@@ -18,10 +18,10 @@ BrakeController::BrakeController(const char *name, int period_ms, uint32_t stack
 Thread(std::bind(&BrakeController::run, this, _1), NULL, name, stack_size) {
 	this->period_ms = period_ms;
 
-	//brake  = new PWM(TIM5, 2);
-	//eBrake = new PWM(TIM9, 1);
+	brake  = new PWM(TIM5, TIM_CHANNEL_2);
+	eBrake = new PWM(TIM9, TIM_CHANNEL_1);
 
-	led1 = new DigitalOut(LD1_GPIO_Port, LD1_Pin);
+	led1 = new DigitalOut(GPIOB, GPIO_PIN_4);
 	led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
 	led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
 	can2 = new CAN(CAN2, 2);
@@ -44,8 +44,8 @@ void BrakeController::run(void *argument) {
 	//t1->join();
 	//t2->join();
 
-	//brake->set(0.5);
-	//eBrake->set(0.5);
+	brake->set(0.5);
+	eBrake->set(0.5);
 
 
 	// If brakeButtonRise
@@ -54,13 +54,15 @@ void BrakeController::run(void *argument) {
 	//	Decelerate over 1 second
 
 
-	float mph = 0;
+	//float mph = 0;
 
 	uint8_t data[8] = {ASSIST, 12, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 	FB9StateMsg msg(data);
 	while(1) {
-		can2->send(msg);
+		//can2->send(msg);
+
 		led1->toggle();
+		led2->toggle();
 		osDelay(period_ms);
 	}
 }
