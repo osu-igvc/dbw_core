@@ -59,6 +59,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define parking_dir_Pin GPIO_PIN_3
+#define parking_dir_GPIO_Port GPIOC
+#define brake_dir_Pin GPIO_PIN_0
+#define brake_dir_GPIO_Port GPIOA
 #define LD1_Pin GPIO_PIN_4
 #define LD1_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_5
