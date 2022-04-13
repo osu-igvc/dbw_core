@@ -20,7 +20,9 @@ class BrakeController: public Thread {
 public:
 	BrakeController(const char *name, int period_ms, uint32_t stack_size = 512);
 	virtual ~BrakeController();
-
+	float getBrakeSpeed();
+	void changeBrakeDirection();
+	void changeEBrakeDirection();
 	void run(void *argument);
 
 private:
@@ -30,7 +32,6 @@ private:
 	void canLed2Cb(CanMsg &msg);
 	void digitalInCb2(uint8_t value);
 	void QuadCb1(uint8_t value);
-	void QuadCb2(uint8_t value);
 	void brake_forward_ls_Cb(uint8_t value);
 	void brake_reverse_ls_Cb(uint8_t value);
 	void eBrake_forward_ls_Cb(uint8_t value);

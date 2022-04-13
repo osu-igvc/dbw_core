@@ -29,6 +29,9 @@ Thread(std::bind(&BrakeController::run, this, _1), NULL, name, stack_size) {
 
 	can2 = new CAN(CAN2, 2);
 
+	quad_ch1 = new DigitalIn(GPIOC, GPIO_PIN_6, RISE, std::bind(&BrakeController::QuadCb1, this, _1), GPIO_PULLDOWN);
+	quad_ch2 = new DigitalIn(GPIOB, GPIO_PIN_15, RISE, GPIO_PULLDOWN);
+
 	brake_forward_ls = new DigitalIn(GPIOC, GPIO_PIN_5, RISE, std::bind(&BrakeController::brake_forward_ls_Cb, this, _1), GPIO_PULLDOWN);
 	brake_reverse_ls = new DigitalIn(GPIOC, GPIO_PIN_4, RISE, std::bind(&BrakeController::brake_reverse_ls_Cb, this, _1), GPIO_PULLDOWN);
 	eBrake_forward_ls = new DigitalIn(GPIOB, GPIO_PIN_0, RISE, std::bind(&BrakeController::eBrake_forward_ls_Cb, this, _1), GPIO_PULLDOWN);
@@ -55,7 +58,7 @@ void BrakeController::run(void *argument) {
 	eBrake->set(0.72);
 	brake_dir->set();
 
-	
+
 
 	// If brakeButtonRise
 	// 	Accelerate to 15 mph over 5 seconds
@@ -99,19 +102,31 @@ void BrakeController::thread2(void *argument) {
 /*
 	Using the count from the encoder we can determine the speed of the motor.
 	The relative speed (counts/millisecond) is then converted into a usable form (centimeters/second)
+	These functions are public in order to be used in other classes.
+	This class needs to be called fairly often in order to minimize error.
 */
-
-/*
 float BrakeController::getBrakeSpeed(){
 	float speed = (encoderCount-prevEncoderCount)/(encTimer.getElapsedTime());
 	encTimer.restart();
+	prevEncoderCount = encoderCount;
+	encoderCount = 0;
 	return speed;
 }
 
-void BrakeController::changeBrakeDirection(){
-
-}
+/*
+	In order to change the direction of either linear actuator for the brakes
+	just call one of the functions below. In order to prevent damage to the motor
+	controller or linear actuator the motor is brought to a stop before changing directions
 */
+void BrakeController::changeBrakeDirection(){
+	brake->set(0);
+	brake_dir->toggle();
+}
+
+void BrakeController::changeEBrakeDirection(){
+	eBrake->set(0);
+	eBrake_dir->toggle();
+}
 
 void BrakeController::canLed2Cb(CanMsg &msg) {
 	FB7PosVelMsg posVelMsg(msg);
@@ -119,7 +134,6 @@ void BrakeController::canLed2Cb(CanMsg &msg) {
 	if(posVelMsg.position == 0x037d007d)
 		led2->toggle();
 }
-
 
 void BrakeController::digitalInCb2(uint8_t value) {
 	if(dIn2->read() != 0) return;
@@ -135,13 +149,13 @@ void BrakeController::digitalInCb2(uint8_t value) {
 */
 void BrakeController::QuadCb1(uint8_t value) {
 	if(value == 0) return;
+	if(!quad_ch2->read())
+		encoderCount++;
+	else
+		encoderCount--;
+
 }
 
-
-void BrakeController::QuadCb2(uint8_t value) {
-	if(value == 0) return;
-
-}
 
 /*
 	The below functions are for when any of the linear actuators hit a limit switch
