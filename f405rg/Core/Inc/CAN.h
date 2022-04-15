@@ -50,6 +50,10 @@ typedef enum {
 } EPS_MSG_ID;
 
 typedef enum {
+	ID_SPEEDEFFORT = 0x8ff07ef
+} VCM_MSG_ID;
+
+typedef enum {
 	OFF 		= 0x00,
 	CURRENT  	= 0x01,
 	ASSIST 		= 0x02,
@@ -120,6 +124,19 @@ public:
 	uint8_t mode 	  :8;
 	uint8_t msgCount  :8;
 	uint64_t 		  :48;
+};
+
+class SpeedEffortMsg : public J1939Msg {
+public:
+	SpeedEffortMsg();
+	SpeedEffortMsg(uint8_t data[8]);
+	SpeedEffortMsg(CanMsg &msg);
+
+	void fillMsg(uint8_t data[8]);
+	uint8_t* toArray(uint16_t wheelSpeed, uint16_t motorEffort);
+
+	uint16_t wheelSpeed  :16;
+	uint16_t motorEffort :16;
 };
 
 

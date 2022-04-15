@@ -18,12 +18,13 @@ BrakeController::BrakeController(const char *name, int period_ms, uint32_t stack
 Thread(std::bind(&BrakeController::run, this, _1), NULL, name, stack_size) {
 	this->period_ms = period_ms;
 
-	brake  = new PWM(TIM5, TIM_CHANNEL_2);
-	eBrake = new PWM(TIM9, TIM_CHANNEL_1);
+	brake  = new PWM(TIM5, TIM_CHANNEL_2, 500);
+	eBrake = new PWM(TIM9, TIM_CHANNEL_1, 500);
 
 	led1 = new DigitalOut(GPIOB, GPIO_PIN_4);
 	led2 = new DigitalOut(LD2_GPIO_Port, LD2_Pin);
 	led3 = new DigitalOut(LD3_GPIO_Port, LD3_Pin);
+	brake_dir = new DigitalOut(GPIOA, GPIO_PIN_0);
 	can2 = new CAN(CAN2, 2);
 
 	dIn2 = new DigitalIn(GPIOC, GPIO_PIN_4, RISE, std::bind(&BrakeController::digitalInCb2, this, _1), GPIO_PULLDOWN);

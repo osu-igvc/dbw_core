@@ -33,6 +33,9 @@ public:
 	void canLed2Cb(CanMsg &msg);
 
 private:
+	void speedEffortCb(CanMsg &msg);
+
+
 	int period_ms;
 
 	float linearTransform(float x, float x1, float y1, float x2, float y2);

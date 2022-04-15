@@ -244,6 +244,28 @@ void FB9StateMsg::fillMsg(uint8_t data[8]) {
 
 //
 ///////////////////////////////////////
+// SpeedEffortMsg CLASS IMPLEMENTATION
+//
+//
+SpeedEffortMsg::SpeedEffortMsg() : J1939Msg() {}
+
+SpeedEffortMsg::SpeedEffortMsg(uint8_t data[8]) : J1939Msg(ID_SPEEDEFFORT, data) {
+	fillMsg(data);
+}
+
+SpeedEffortMsg::SpeedEffortMsg(CanMsg &msg) : J1939Msg(msg) {
+	fillMsg(msg.data);
+}
+
+void SpeedEffortMsg::fillMsg(uint8_t data[8]) {
+	wheelSpeed 	 = (data[6] << 8) + data[5];
+	motorEffort  = (data[2] << 8) + data[3];
+}
+
+
+
+//
+///////////////////////////////////////
 // CAN CLASS IMPLEMENTATION
 //
 

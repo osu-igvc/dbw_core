@@ -34,7 +34,7 @@ private:
 
 	PWM *brake, *eBrake;
 
-	DigitalOut *led1, *led2, *led3;
+	DigitalOut *led1, *led2, *led3, *brake_dir;
 	DigitalIn *dIn2;
 	CAN *can2;
 

@@ -51,6 +51,7 @@ DashController::~DashController() {
 
 void DashController::run(void *argument) {
 	  can2->subscribe(ID_FB9STATE, std::bind(&DashController::canLed2Cb, this, _1));
+	  can2->subscribe(ID_SPEEDEFFORT, std::bind(&DashController::speedEffortCb, this, _1));
 
 	  uint8_t data[8] = {0x03, 0x7d, 0x00, 0x7d, 0x00, 0x80, 0x46, 0xff};
 	  FB7PosVelMsg msg(data);
@@ -121,6 +122,12 @@ void DashController::canLed2Cb(CanMsg &msg) {
 		led2->set();
 		break;
 	}
+}
+
+void DashController::speedEffortCb(CanMsg &msg) {
+	SpeedEffortMsg speedMsg(msg);
+
+	uint16_t test = speedMsg.wheelSpeed;
 }
 
 void DashController::throttleButtonCb(uint8_t value) {
