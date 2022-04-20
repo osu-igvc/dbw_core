@@ -24,8 +24,10 @@ Thread(std::bind(&DashController::run, this, _1), NULL, name, stack_size) {
 	this->led2 = new DigitalOut(GPIOB, GPIO_PIN_5);
 	this->led3 = new DigitalOut(GPIOB, GPIO_PIN_4);
 
-	this->fnrState0 = new DigitalOut(GPIOB, GPIO_PIN_0);
-	//this->fnrState1 = new DigitalOut(GPIOB, GPIO_PIN_1);
+	this->stmF = new DigitalOut(GPIOB, GPIO_PIN_0);
+	this->stmN = new DigitalOut(GPIOB, GPIO_PIN_1);
+	this->stmR = new DigitalOut(GPIOB, GPIO_PIN_2);
+
 	this->relayEnable = new DigitalOut(GPIOC, GPIO_PIN_4);
 	this->parkingBrake = new DigitalOut(GPIOA, GPIO_PIN_6);
 
@@ -87,9 +89,11 @@ void DashController::run(void *argument) {
 			}
 		}
 
+		setGear(NEUTRAL);
 		can2->send(msg);
 
-		setThrottle(mph);
+		//setThrottle(mph);
+		//setThrottle(10);
 		//setGear(REVERSE);
 		//led1->set((incr++ % 11)/10.0);
 
@@ -103,7 +107,7 @@ void DashController::run(void *argument) {
 		//	bool test = false;
 
 
-		led3->toggle();
+		led1->toggle();
 		osDelay(period_ms);
 	  }
 }
@@ -137,8 +141,10 @@ void DashController::throttleButtonCb(uint8_t value) {
 
 
 void DashController::setThrottle(float mph) {
-	float s1 = linearTransform(mph, 0, 1.082/2, 25, 4.14/2);
-	float s2 = linearTransform(mph, 0, 0.538/2, 25, 2.089/2);
+	mph = (mph < 0) ? 0 : mph;
+	mph = (mph > 10.0) ? 10.0 : mph;
+	float s1 = linearTransform(mph, 0, 1.082/1.5, 25, 4.14/1.5);
+	float s2 = linearTransform(mph, 0, 0.538/1.5, 25, 2.089/1.5);
 	accel1->write(s1);
 	accel2->write(s2);
 }
@@ -146,16 +152,19 @@ void DashController::setThrottle(float mph) {
 void DashController::setGear(Gear gear) {
 	switch(gear) {
 	case FORWARD:
-		fnrState0->reset();
-		fnrState1->reset();
+		stmF->set();
+		stmN->reset();
+		stmR->reset();
 		break;
 	case NEUTRAL:
-		fnrState0->set();
-		fnrState1->set();
+		stmF->reset();
+		stmN->set();
+		stmR->reset();
 		break;
 	case REVERSE:
-		fnrState0->reset();
-		fnrState1->set();
+		stmF->reset();
+		stmN->reset();
+		stmR->set();
 		break;
 	default:
 		Error_Handler();

@@ -67,7 +67,7 @@ int main(void)
   osKernelInitialize();
 
 
-  BoardType boardType = BoardType::BRAKE_BOARD;
+  BoardType boardType = BoardType::DASH_BOARD;
 
   Thread *applicationThread;
 
