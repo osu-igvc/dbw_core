@@ -51,7 +51,7 @@ private:
 	void throttleButtonCb(uint8_t value);
 
 	DigitalOut *led1, *led2, *led3;
-	DigitalOut *fnrState0, *fnrState1, *relayEnable;
+	DigitalOut *stmR, *stmN, *stmF, *relayEnable;
 	DigitalOut *parkingBrake;
 
 	DigitalIn *polarisR, *polarisN, *polarisF;

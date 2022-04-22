@@ -158,16 +158,19 @@ void DashController::setThrottle(float mph) {
 void DashController::setGear(Gear gear) {
 	switch(gear) {
 	case FORWARD:
-		fnrState0->reset();
-		fnrState1->reset();
+		stmF->set();
+		stmN->reset();
+		stmR->reset();
 		break;
 	case NEUTRAL:
-		fnrState0->set();
-		fnrState1->set();
+		stmF->reset();
+		stmN->set();
+		stmR->reset();
 		break;
 	case REVERSE:
-		fnrState0->reset();
-		fnrState1->set();
+		stmF->reset();
+		stmN->reset();
+		stmR->set();
 		break;
 	default:
 		Error_Handler();
