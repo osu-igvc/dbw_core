@@ -18,6 +18,7 @@ public:
 	void start();
 	void restart();
 	uint32_t getElapsedTime(); //milliseconds
+	uint32_t read(); //milliseconds
 
 private:
 	uint32_t startTick;

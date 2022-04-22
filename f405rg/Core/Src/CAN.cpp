@@ -67,6 +67,7 @@ CanMsg::CanMsg(uint32_t ide) {
 	this->rxHeader.IDE = ide;
 	this->txHeader.IDE = ide;
 	this->txHeader.DLC = 8;
+	this->txHeader.RTR = CAN_RTR_DATA;
 }
 
 CanMsg::CanMsg(uint32_t id, uint8_t data[8]) {
@@ -299,10 +300,41 @@ void CAN::init(CAN_TypeDef *base, uint16_t queueSize) {
 	if(base == CAN1) {
 		HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 5, 0U);
 		HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+
+		CAN_FilterTypeDef canfilterconfig;
+		canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
+		canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO0;
+		canfilterconfig.FilterIdHigh			= 0x0000;
+		canfilterconfig.FilterIdLow				= 0x0000;
+		canfilterconfig.FilterMaskIdHigh 		= 0x0000;
+		canfilterconfig.FilterMaskIdLow 		= 0x0000;
+		canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
+		canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
+		canfilterconfig.FilterBank = 19;
+
+		canfilterconfig.SlaveStartFilterBank	= 20;
+
+		if(HAL_CAN_ConfigFilter(&hcan1, &canfilterconfig) != HAL_OK)
+			Error_Handler();
 	}
 	else {
 		HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 5,0U);
 		HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
+
+		CAN_FilterTypeDef canfilterconfig;
+		canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
+		canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO0;
+		canfilterconfig.FilterIdHigh			= 0x0000;
+		canfilterconfig.FilterIdLow				= 0x0000;
+		canfilterconfig.FilterMaskIdHigh 		= 0x0000;
+		canfilterconfig.FilterMaskIdLow 		= 0x0000;
+		canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
+		canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
+		canfilterconfig.FilterBank 				= 27;
+		canfilterconfig.SlaveStartFilterBank	= 20;
+
+		if(HAL_CAN_ConfigFilter(&hcan2, &canfilterconfig) != HAL_OK)
+			Error_Handler();
 	}
 
 	if(HAL_CAN_ActivateNotification(handle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)

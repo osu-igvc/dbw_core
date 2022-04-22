@@ -13,10 +13,11 @@ extern CAN_HandleTypeDef hcan2;
 
 
 void initDevice(void) {
+	SystemClock_Config();
+
 	MX_GPIO_Init();
 	CAN1_Init();
 	CAN2_Init();
-	SystemClock_Config();
 }
 
 
@@ -38,10 +39,8 @@ void SystemClock_Config(void)
 	  /** Initializes the RCC Oscillators according to the specified parameters
 	  * in the RCC_OscInitTypeDef structure.
 	  */
-	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
+	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
 	  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
 	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
 	  RCC_OscInitStruct.PLL.PLLM = 15;
@@ -57,10 +56,10 @@ void SystemClock_Config(void)
 	  */
 	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
 	                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
 	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
 	  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
 	  {
@@ -77,47 +76,86 @@ void SystemClock_Config(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+	  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+	  /* GPIO Ports Clock Enable */
+	  __HAL_RCC_GPIOH_CLK_ENABLE();
+	  __HAL_RCC_GPIOC_CLK_ENABLE();
+	  __HAL_RCC_GPIOA_CLK_ENABLE();
+	  __HAL_RCC_GPIOB_CLK_ENABLE();
+	  __HAL_RCC_GPIOD_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+	  /*Configure GPIO pin Output Level */
+	  HAL_GPIO_WritePin(parking_dir_GPIO_Port, parking_dir_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+	  /*Configure GPIO pin Output Level */
+	  HAL_GPIO_WritePin(GPIOA, brake_dir_Pin|GPIO_PIN_7, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PA4 PA5 PA6 PA7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	  /*Configure GPIO pin Output Level */
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC4 PC5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	  /*Configure GPIO pin Output Level */
+	  HAL_GPIO_WritePin(GPIOB, LD2_Pin|LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PB0 PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	  /*Configure GPIO pin : parking_dir_Pin */
+	  GPIO_InitStruct.Pin = parking_dir_Pin;
+	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	  HAL_GPIO_Init(parking_dir_GPIO_Port, &GPIO_InitStruct);
 
+	  /*Configure GPIO pins : brake_dir_Pin PA7 */
+	  GPIO_InitStruct.Pin = brake_dir_Pin|GPIO_PIN_7;
+	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PD2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	  /*Configure GPIO pin : PA6 */
+	  GPIO_InitStruct.Pin = GPIO_PIN_6;
+	  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	  /*Configure GPIO pins : PC4 PC5 */
+	  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5;
+	  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	  /*Configure GPIO pins : PB0 PB1 */
+	  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+	  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	  /*Configure GPIO pin : PD2 */
+	  GPIO_InitStruct.Pin = GPIO_PIN_2;
+	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	  /*Configure GPIO pins : LD2_Pin LD3_Pin */
+	  GPIO_InitStruct.Pin = LD2_Pin|LD3_Pin;
+	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	  GPIO_InitStruct.Pull = GPIO_NOPULL;
+	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	  /* EXTI interrupt init*/
+	  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
+	  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+	  HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
+	  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+	  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
+	  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+	  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+	  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
 }
 
 /**
@@ -137,67 +175,41 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 
 void CAN2_Init(void) {
-	CAN_HandleTypeDef *handle = &hcan2;
-
-	handle->Instance = CAN2;
-	handle->Init.Prescaler = 6;
-	handle->Init.Mode = CAN_MODE_NORMAL;
-	handle->Init.SyncJumpWidth = CAN_SJW_2TQ;
-	handle->Init.TimeSeg1 = CAN_BS1_2TQ;
-	handle->Init.TimeSeg2 = CAN_BS2_2TQ;
-	handle->Init.TimeTriggeredMode = DISABLE;
-	handle->Init.AutoBusOff = DISABLE;
-	handle->Init.AutoWakeUp = DISABLE;
-	handle->Init.AutoRetransmission = ENABLE;
-	handle->Init.ReceiveFifoLocked = DISABLE;
-	handle->Init.TransmitFifoPriority = DISABLE;
-
-	if (HAL_CAN_Init(handle) != HAL_OK)
-		Error_Handler();
-
-	CAN_FilterTypeDef canfilterconfig;
-	canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
-	canfilterconfig.FilterBank 				= 0;
-	canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO0;
-	canfilterconfig.FilterMaskIdHigh 		= 0x0000;
-	canfilterconfig.FilterMaskIdLow 		= 0x0000;
-	canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
-	canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
-
-	if(HAL_CAN_ConfigFilter(handle, &canfilterconfig) != HAL_OK)
-		Error_Handler();
+	  hcan2.Instance = CAN2;
+	  hcan2.Init.Prescaler = 20;
+	  hcan2.Init.Mode = CAN_MODE_NORMAL;
+	  hcan2.Init.SyncJumpWidth = CAN_SJW_2TQ;
+	  hcan2.Init.TimeSeg1 = CAN_BS1_2TQ;
+	  hcan2.Init.TimeSeg2 = CAN_BS2_2TQ;
+	  hcan2.Init.TimeTriggeredMode = DISABLE;
+	  hcan2.Init.AutoBusOff = DISABLE;
+	  hcan2.Init.AutoWakeUp = DISABLE;
+	  hcan2.Init.AutoRetransmission = ENABLE;
+	  hcan2.Init.ReceiveFifoLocked = DISABLE;
+	  hcan2.Init.TransmitFifoPriority = DISABLE;
+	  if (HAL_CAN_Init(&hcan2) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
 }
 
 void CAN1_Init(void) {
-	CAN_HandleTypeDef *handle = &hcan1;
-
-	handle->Instance = CAN1;
-	handle->Init.Prescaler = 16;
-	handle->Init.Mode = CAN_MODE_NORMAL;
-	handle->Init.SyncJumpWidth = CAN_SJW_1TQ;
-	handle->Init.TimeSeg1 = CAN_BS1_1TQ;
-	handle->Init.TimeSeg2 = CAN_BS2_1TQ;
-	handle->Init.TimeTriggeredMode = DISABLE;
-	handle->Init.AutoBusOff = DISABLE;
-	handle->Init.AutoWakeUp = DISABLE;
-	handle->Init.AutoRetransmission = ENABLE;
-	handle->Init.ReceiveFifoLocked = DISABLE;
-	handle->Init.TransmitFifoPriority = DISABLE;
-
-	if (HAL_CAN_Init(handle) != HAL_OK)
-		Error_Handler();
-
-	CAN_FilterTypeDef canfilterconfig;
-	canfilterconfig.FilterActivation 		= CAN_FILTER_ENABLE;
-	canfilterconfig.FilterBank 				= 0;
-	canfilterconfig.FilterFIFOAssignment 	= CAN_FILTER_FIFO1;
-	canfilterconfig.FilterMaskIdHigh 		= 0x0000;
-	canfilterconfig.FilterMaskIdLow 		= 0x0000;
-	canfilterconfig.FilterMode 				= CAN_FILTERMODE_IDMASK;
-	canfilterconfig.FilterScale 			= CAN_FILTERSCALE_32BIT;
-
-	if(HAL_CAN_ConfigFilter(handle, &canfilterconfig) != HAL_OK)
-		Error_Handler();
+	  hcan1.Instance = CAN1;
+	  hcan1.Init.Prescaler = 20;
+	  hcan1.Init.Mode = CAN_MODE_NORMAL;
+	  hcan1.Init.SyncJumpWidth = CAN_SJW_2TQ;
+	  hcan1.Init.TimeSeg1 = CAN_BS1_2TQ;
+	  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
+	  hcan1.Init.TimeTriggeredMode = DISABLE;
+	  hcan1.Init.AutoBusOff = DISABLE;
+	  hcan1.Init.AutoWakeUp = DISABLE;
+	  hcan1.Init.AutoRetransmission = DISABLE;
+	  hcan1.Init.ReceiveFifoLocked = DISABLE;
+	  hcan1.Init.TransmitFifoPriority = DISABLE;
+	  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
 }
 
 

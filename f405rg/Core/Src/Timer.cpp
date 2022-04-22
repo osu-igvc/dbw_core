@@ -30,3 +30,7 @@ uint32_t Timer::getElapsedTime() {
 	uint32_t elapsedTicks = osKernelGetTickCount()-startTick;
 	return 1000*elapsedTicks/osKernelGetTickFreq();
 }
+
+uint32_t Timer::read() {
+	return getElapsedTime();
+}

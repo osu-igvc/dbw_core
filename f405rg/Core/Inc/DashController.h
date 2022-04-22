@@ -16,6 +16,7 @@
 #include "DigitalOut.h"
 #include "PWM.h"
 #include "AnalogOut.h"
+#include "Timer.h"
 
 typedef enum {
 	FORWARD,
@@ -34,16 +35,18 @@ public:
 
 private:
 	void speedEffortCb(CanMsg &msg);
+	void throttleCmdCb(CanMsg &msg);
+	void gearCmdCb(CanMsg &msg);
+	void steeringCmdCb(CanMsg &msg);
+	void enabledCmdCb(CanMsg &msg);
 
 
 	int period_ms;
 
-	float linearTransform(float x, float x1, float y1, float x2, float y2);
+	double linearTransform(double x, double x1, double x2, double y1, double y2);
+	double inverseLinearTransform(double y, double x1, double x2, double y1, double y2);
 	void setThrottle(float mph);
 	void setGear(Gear gear);
-
-	volatile bool throttleButtonRise;
-	bool inAccelerationProgram;
 
 	void throttleButtonCb(uint8_t value);
 
@@ -53,11 +56,14 @@ private:
 
 	DigitalIn *polarisR, *polarisN, *polarisF;
 	DigitalIn *eStop;
-	DigitalIn *throttleButton;
 
 	AnalogOut *accel1, *accel2;
 
-	CAN *can1, *can2;
+	CAN *can2, *can1;
+
+	Timer *enableTimeout;
+
+	bool enabled = false;
 };
 
 #endif /* INC_DASHCONTROLLER_H_ */

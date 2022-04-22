@@ -60,22 +60,22 @@ int main(void)
 {
   HAL_Init();
   initDevice();
-  MX_USB_DEVICE_Init();
+  //MX_USB_DEVICE_Init();
 
 
 
   osKernelInitialize();
 
 
-  BoardType boardType = BoardType::BRAKE_BOARD;
+  BoardType boardType = BoardType::DASH_BOARD;
 
   Thread *applicationThread;
 
   if(boardType == BRAKE_BOARD) {
-	  applicationThread = new BrakeController("BrakeController", 200, 1024);
+	  applicationThread = new BrakeController("BrakeController", 200, 2048);
   }
   else if(boardType == DASH_BOARD) {
-	 applicationThread = new DashController("DashController", 100, 1024);
+	 applicationThread = new DashController("DashController", 100, 2048);
   }
   else if(boardType == LOW_LEVEL_CONTROLLER) {}
   else if(boardType == DUAL_CAN) {}
