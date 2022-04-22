@@ -32,8 +32,10 @@ Thread(std::bind(&DashController::run, this, _1), NULL, name, stack_size) {
 	this->led2 = new DigitalOut(GPIOB, GPIO_PIN_5);
 	this->led3 = new DigitalOut(GPIOB, GPIO_PIN_4);
 
-	this->fnrState0 = new DigitalOut(GPIOB, GPIO_PIN_0);
-	this->fnrState1 = new DigitalOut(GPIOB, GPIO_PIN_1);
+	this->stmF = new DigitalOut(GPIOB, GPIO_PIN_0);
+	this->stmN = new DigitalOut(GPIOB, GPIO_PIN_1);
+	this->stmR = new DigitalOut(GPIOB, GPIO_PIN_2);
+
 	this->relayEnable = new DigitalOut(GPIOC, GPIO_PIN_4);
 	this->parkingBrake = new DigitalOut(GPIOA, GPIO_PIN_6);
 
