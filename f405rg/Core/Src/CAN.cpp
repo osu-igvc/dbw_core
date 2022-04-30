@@ -69,6 +69,13 @@ CanMsg::CanMsg(uint32_t ide) {
 	this->txHeader.DLC = 8;
 }
 
+
+/**
+ * @brief Create a new CanMsg with a standard ID and data array
+ *
+ * @param id uint32_t CAN ID of the message
+ * @param data uint8_t[8] Byte array of data
+ */
 CanMsg::CanMsg(uint32_t id, uint8_t data[8]) {
 	this->txHeader.StdId = id;
 	this->txHeader.IDE 	= CAN_ID_STD;
@@ -78,6 +85,13 @@ CanMsg::CanMsg(uint32_t id, uint8_t data[8]) {
 	memcpy(this->data, data, sizeof(this->data));
 }
 
+/**
+ * @brief Create a new CanMsg with an extended or standard ID and data array
+ *
+ * @param id uint32_t CAN ID of the message
+ * @param ide CAN_ID_STD or CAN_ID_EXT
+ * @param data Byte array of data
+ */
 CanMsg::CanMsg(uint32_t id, uint32_t ide, uint8_t data[8]) {
 	this->txHeader.IDE 	= ide;
 	this->rxHeader.IDE = ide;
@@ -100,6 +114,11 @@ CanMsg::CanMsg(uint32_t id, uint32_t ide, uint8_t data[8]) {
 	}
 }
 
+/**
+ * @brief Return a pointer to the data array
+ *
+ * @return pointer to the data array
+ */
 uint8_t* CanMsg::toArray() {
 	return data;
 }
@@ -113,14 +132,30 @@ uint8_t* CanMsg::toArray() {
 
 J1939Msg::J1939Msg() : CanMsg() {};
 
+/**
+ * @brief Create a new J1939 type message
+ *
+ * @param id uint32_t Extended ID of the message
+ * @param data uint8_t[8] Byte array for of the data
+ */
 J1939Msg::J1939Msg(uint32_t id, uint8_t data[8]) : CanMsg(id, CAN_ID_EXT, data) {
 	fillHeader(id);
 }
 
+/**
+ * @brief Create a enw J1939 type message from an existing CanMsg
+ *
+ * @param msg CanMsg CAN from HAL API
+ */
 J1939Msg::J1939Msg(CanMsg &msg) : CanMsg(msg.id, CAN_ID_EXT, msg.data) {
 	fillHeader(msg.id);
 }
 
+/**
+ * @brief Function to automatically fill out J1939 specs. Called by constructor.
+ *
+ * @param id Extended ID of the message
+ */
 void J1939Msg::fillHeader(uint32_t id) {
 	priority 	= id >> 26;
 	reserved 	= id >> 25;
@@ -130,6 +165,12 @@ void J1939Msg::fillHeader(uint32_t id) {
 	sourceAddr 	= id;
 }
 
+/**
+ * @brief Convert the data byte array to a single 64 bit value
+ *
+ * @param data uint8_t[8] Data byte array
+ * @return uint64_t Single value representing the data array
+ */
 uint64_t J1939Msg::getDatum(uint8_t data[8]) {
 	uint64_t datum = 0;
 	for(int i=0; i<8; ++i) {
@@ -139,7 +180,11 @@ uint64_t J1939Msg::getDatum(uint8_t data[8]) {
 	return datum;
 }
 
-
+/**
+ * @brief Convert a 64 bit number into a byte array
+ *
+ * @param datum uint64_t 64 bit number to be converted
+ */
 void J1939Msg::setData(uint64_t datum) {
 	memcpy(data, &datum, 8*sizeof(uint8_t));
 }
@@ -153,14 +198,30 @@ void J1939Msg::setData(uint64_t datum) {
 
 FB3TorqueMsg::FB3TorqueMsg() : J1939Msg() {}
 
+/**
+ * @brief Message from the EPS including torque feedback
+ *
+ * @param data uint8_t[8] Byte array representing the data
+ */
 FB3TorqueMsg::FB3TorqueMsg(uint8_t data[8]) : J1939Msg(ID_FB3TORQUE, data) {
 	fillMsg(data);
 }
 
+/**
+ * @brief Message from the EPS including torque feedback
+ *
+ * @param msg CanMsg CAN msg from the HAL API
+ */
 FB3TorqueMsg::FB3TorqueMsg(CanMsg &msg) : J1939Msg(msg) {
 	fillMsg(msg.data);
 }
 
+/**
+ * @brief Message from the EPS including torque feedback
+ *
+ * @param inputTorque uint32_t Torque on the steering wheel side
+ * @param cmdTorque uint32)t Torque on the steering shaft side
+ */
 FB3TorqueMsg::FB3TorqueMsg(uint32_t inputTorque, uint32_t cmdTorque) : J1939Msg(ID_FB3TORQUE, toArray(inputTorque, cmdTorque)) {
 	this->inputTorque = inputTorque;
 	this->cmdTorque = cmdTorque;
